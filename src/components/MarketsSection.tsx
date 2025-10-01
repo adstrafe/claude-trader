@@ -9,7 +9,7 @@ interface MarketsSectionProps {
 
 export function MarketsSection({ pairs, onQuickTrade }: MarketsSectionProps) {
   return (
-    <section>
+    <section className="@container">
       <div className="flex items-center justify-between mb-4">
         <h2 className="text-xl font-semibold">Markets</h2>
       </div>
@@ -18,7 +18,7 @@ export function MarketsSection({ pairs, onQuickTrade }: MarketsSectionProps) {
         <MarketPanicIndex />
       </div>
       
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 @lg:grid-cols-2 @4xl:grid-cols-4 gap-4">
         {pairs.map((pair) => (
           <ForexCard
             key={pair.symbol}

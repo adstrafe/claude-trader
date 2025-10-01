@@ -17,7 +17,13 @@ export function Header({ darkMode, onToggleDarkMode, balance = 50000 }: HeaderPr
     <header className="border-b sticky top-0 bg-card z-10">
       <div className="flex items-center justify-between px-4 py-3">
         <div className="flex items-center gap-4">
-          <h1 className="text-md font-bold">OnlyPrompts<br />Trading</h1>
+          <div className="flex items-center">
+            <img 
+              src={darkMode ? "/logo-dark.svg" : "/logo-light.svg"} 
+              alt="OnlyPrompts Trading" 
+              className="h-5 w-auto"
+            />
+          </div>
           <div className="hidden sm:flex items-center gap-2 text-sm">
             <span className="text-muted-foreground">Balance:</span>
             <span className="data-cell font-semibold">${balance.toFixed(2)}</span>
@@ -68,14 +74,13 @@ export function Header({ darkMode, onToggleDarkMode, balance = 50000 }: HeaderPr
         <div className="lg:hidden border-t bg-card">
           <div className="px-4 py-3 space-y-3">
             {/* Balance */}
-            <div className="flex items-center gap-2 text-sm">
+            <div className="flex items-center gap-2 text-sm sm:hidden justify-center">
               <span className="text-muted-foreground">Balance:</span>
               <span className="data-cell font-semibold">${balance.toFixed(2)}</span>
             </div>
 
             {/* Emotional State Badge */}
-            <div className="flex items-center gap-2">
-              <span className="text-sm text-muted-foreground">Emotional State:</span>
+            <div className="flex items-center gap-2 justify-center">
               <EmotionScoreBar />
             </div>
 
