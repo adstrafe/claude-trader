@@ -9,9 +9,10 @@ import { Link } from "react-router-dom";
 interface ForexCardProps {
   pair: ForexPair;
   onQuickTrade?: () => void;
+  onToggleFavorite?: (symbol: string) => void;
 }
 
-export const ForexCard = ({ pair, onQuickTrade }: ForexCardProps) => {
+export const ForexCard = ({ pair, onQuickTrade, onToggleFavorite }: ForexCardProps) => {
   const isPositive = pair.changePercent >= 0;
 
   return (
@@ -21,13 +22,28 @@ export const ForexCard = ({ pair, onQuickTrade }: ForexCardProps) => {
           <Link to={`/pair/${pair.symbol}`} className="hover:text-primary">
             <h3 className="font-semibold text-lg">{pair.name}</h3>
           </Link>
-          {pair.isFavorite && <Star className="h-4 w-4 fill-warning text-warning" />}
+          {onToggleFavorite && (
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-6 w-6 p-0"
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                onToggleFavorite(pair.symbol);
+              }}
+              title={pair.isFavorite ? "Remove from favorites" : "Add to favorites"}
+            >
+              <Star className={cn("h-4 w-4", pair.isFavorite ? "fill-purple-500 text-purple-500" : "text-muted-foreground")} />
+            </Button>
+          )}
+          {!onToggleFavorite && pair.isFavorite && <Star className="h-4 w-4 fill-purple-500 text-purple-500" />}
         </div>
         <div className={cn("flex items-center gap-1", isPositive ? "text-success" : "text-danger")}>
           {isPositive ? <TrendingUp className="h-4 w-4" /> : <TrendingDown className="h-4 w-4" />}
           <span className="text-sm font-medium">
             {isPositive ? "+" : ""}
-            {pair.changePercent.toFixed(2)}%
+            {pair.changePercent.toFixed(3)}%
           </span>
         </div>
       </div>

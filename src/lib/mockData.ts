@@ -32,17 +32,6 @@ export interface TradeHistory extends Position {
 
 export const MOCK_PAIRS: ForexPair[] = [
   {
-    symbol: "USDJPY",
-    name: "USD/JPY",
-    price: 149.856,
-    change: 0.243,
-    changePercent: 0.16,
-    high24h: 150.125,
-    low24h: 149.512,
-    volume: 1523000,
-    isFavorite: true,
-  },
-  {
     symbol: "EURUSD",
     name: "EUR/USD",
     price: 1.0845,
@@ -51,6 +40,16 @@ export const MOCK_PAIRS: ForexPair[] = [
     high24h: 1.0872,
     low24h: 1.0831,
     volume: 2145000,
+  },
+  {
+    symbol: "USDJPY",
+    name: "USD/JPY",
+    price: 149.856,
+    change: 0.243,
+    changePercent: 0.16,
+    high24h: 150.125,
+    low24h: 149.512,
+    volume: 1523000,
   },
   {
     symbol: "GBPUSD",
@@ -63,6 +62,16 @@ export const MOCK_PAIRS: ForexPair[] = [
     volume: 1832000,
   },
   {
+    symbol: "EURGBP",
+    name: "EUR/GBP",
+    price: 0.8587,
+    change: -0.0012,
+    changePercent: -0.14,
+    high24h: 0.8612,
+    low24h: 0.8578,
+    volume: 987000,
+  },
+  {
     symbol: "BTCUSD",
     name: "BTC/USD",
     price: 67342.5,
@@ -71,6 +80,36 @@ export const MOCK_PAIRS: ForexPair[] = [
     high24h: 67890.2,
     low24h: 66102.3,
     volume: 34567,
+  },
+  {
+    symbol: "AUDUSD",
+    name: "AUD/USD",
+    price: 0.6589,
+    change: 0.0023,
+    changePercent: 0.35,
+    high24h: 0.6612,
+    low24h: 0.6578,
+    volume: 756000,
+  },
+  {
+    symbol: "USDCAD",
+    name: "USD/CAD",
+    price: 1.3623,
+    change: -0.0015,
+    changePercent: -0.11,
+    high24h: 1.3645,
+    low24h: 1.3612,
+    volume: 543000,
+  },
+  {
+    symbol: "NZDUSD",
+    name: "NZD/USD",
+    price: 0.6123,
+    change: 0.0018,
+    changePercent: 0.29,
+    high24h: 0.6145,
+    low24h: 0.6112,
+    volume: 234000,
   },
 ];
 

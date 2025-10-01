@@ -22,6 +22,7 @@ import {
   filterPopularForexPairs 
 } from "@/lib/yourBourseAdapter";
 import { simulatedTrading } from "@/lib/simulatedTrading";
+import { applyFavoritesToPairs, toggleFavorite } from "@/lib/favorites";
 
 export default function Dashboard() {
   const [pairs, setPairs] = useState<ForexPair[]>([]);
@@ -73,8 +74,11 @@ export default function Dashboard() {
         const forexPairs = convertSymbolsToForexPairs(symbols);
         const popularPairs = filterPopularForexPairs(forexPairs);
         
+        // Apply favorites from cookies to the pairs
+        const pairsWithFavorites = applyFavoritesToPairs(popularPairs);
+        
         // Set initial pairs (will update via WebSocket)
-        setPairs(popularPairs);
+        setPairs(pairsWithFavorites);
 
         // Use simulated balance for demo
         setAccountBalance(simulatedTrading.getEquity());
@@ -90,13 +94,37 @@ export default function Dashboard() {
 
         // Subscribe to price updates for each symbol
         popularPairs.forEach(pair => {
+          let openingPrice: number | null = null;
+          
           yourBourseAPI.subscribeToPrices(pair.symbol, (data) => {
+            console.log(`${pair.symbol} Dashboard Real-time Data:`, {
+              symbol: pair.symbol,
+              ask: data.a,
+              bid: data.bid,
+              change: data.c,
+              changePercent: data.cp,
+              high24h: data.h,
+              low24h: data.low
+            });
+            
             setPairs(prev => prev.map(p => {
               const symbolMatch = data.s === p.symbol || data.n === p.symbol;
               if (symbolMatch && data.a && data.bid) {
                 const newPrice = (data.a + data.bid) / 2;
-                const change = newPrice - p.price;
-                const changePercent = p.price !== 0 ? (change / p.price) * 100 : 0;
+                
+                // Set opening price on first update
+                if (openingPrice === null) {
+                  openingPrice = newPrice;
+                }
+                
+                // Calculate change from opening price
+                const priceDiff = newPrice - openingPrice;
+                const pipSize = p.symbol.includes('JPY') ? 0.01 : 0.0001;
+                const pipsChange = priceDiff / pipSize;
+                
+                // Amplify the percentage for demo visibility (50x multiplier)
+                const rawPercent = openingPrice !== 0 ? (priceDiff / openingPrice) * 100 : 0;
+                const changePercent = rawPercent * 50; // Make changes more dramatic for demo
                 
                 // Update simulated trades with new prices
                 const openTrades = simulatedTrading.getOpenTrades();
@@ -123,7 +151,7 @@ export default function Dashboard() {
                 return {
                   ...p,
                   price: newPrice,
-                  change: change,
+                  change: pipsChange,  // Show change in pips
                   changePercent: changePercent,
                   high24h: Math.max(p.high24h, newPrice),
                   low24h: Math.min(p.low24h, newPrice),
@@ -180,6 +208,14 @@ export default function Dashboard() {
   const handleQuickTrade = (pair: ForexPair) => {
     setSelectedPair(pair);
     setShowQuickTrade(true);
+  };
+
+  const handleToggleFavorite = (symbol: string) => {
+    // Toggle favorite in cookies
+    toggleFavorite(symbol);
+    
+    // Refresh pairs with updated favorites
+    setPairs(prevPairs => applyFavoritesToPairs(prevPairs));
   };
 
   const totalPnL = positions.reduce((sum, pos) => sum + pos.pnl, 0);
@@ -255,6 +291,7 @@ export default function Dashboard() {
               <MarketsSection
                 pairs={pairs}
                 onQuickTrade={handleQuickTrade}
+                onToggleFavorite={handleToggleFavorite}
               />
 
               <RecommendedTrades

@@ -4,23 +4,21 @@ import { createChart, CandlestickData, CandlestickSeries } from "lightweight-cha
 interface CandlestickChartProps {
   data: CandlestickData[];
   height?: number;
+  isDarkMode?: boolean;
 }
 
-export const CandlestickChart = ({ data, height = 400 }: CandlestickChartProps) => {
+export const CandlestickChart = ({ data, height = 400, isDarkMode = true }: CandlestickChartProps) => {
   const chartContainerRef = useRef<HTMLDivElement>(null);
   const chartRef = useRef<any>(null);
   const seriesRef = useRef<any>(null);
 
+  // Update chart theme when dark mode changes
   useEffect(() => {
-    if (!chartContainerRef.current) return;
+    if (!chartRef.current) return;
 
-    chartRef.current = createChart(chartContainerRef.current, {
-      width: chartContainerRef.current.clientWidth,
-      height,
-      layout: {
-        background: { color: "transparent" },
-        textColor: "#9ca3af",
-      },
+    const theme = isDarkMode ? {
+      background: { color: "transparent" },
+      textColor: "#9ca3af",
       grid: {
         vertLines: { color: "#1f2937" },
         horzLines: { color: "#1f2937" },
@@ -31,6 +29,67 @@ export const CandlestickChart = ({ data, height = 400 }: CandlestickChartProps) 
       rightPriceScale: {
         borderColor: "#374151",
       },
+    } : {
+      background: { color: "transparent" },
+      textColor: "#374151",
+      grid: {
+        vertLines: { color: "#e5e7eb" },
+        horzLines: { color: "#e5e7eb" },
+      },
+      timeScale: {
+        borderColor: "#d1d5db",
+      },
+      rightPriceScale: {
+        borderColor: "#d1d5db",
+      },
+    };
+
+    chartRef.current.applyOptions({
+      layout: theme,
+      grid: theme.grid,
+      timeScale: theme.timeScale,
+      rightPriceScale: theme.rightPriceScale,
+    });
+  }, [isDarkMode]);
+
+  useEffect(() => {
+    if (!chartContainerRef.current) return;
+
+    const theme = isDarkMode ? {
+      background: { color: "transparent" },
+      textColor: "#9ca3af",
+      grid: {
+        vertLines: { color: "#1f2937" },
+        horzLines: { color: "#1f2937" },
+      },
+      timeScale: {
+        borderColor: "#374151",
+      },
+      rightPriceScale: {
+        borderColor: "#374151",
+      },
+    } : {
+      background: { color: "transparent" },
+      textColor: "#374151",
+      grid: {
+        vertLines: { color: "#e5e7eb" },
+        horzLines: { color: "#e5e7eb" },
+      },
+      timeScale: {
+        borderColor: "#d1d5db",
+      },
+      rightPriceScale: {
+        borderColor: "#d1d5db",
+      },
+    };
+
+    chartRef.current = createChart(chartContainerRef.current, {
+      width: chartContainerRef.current.clientWidth,
+      height,
+      layout: theme,
+      grid: theme.grid,
+      timeScale: theme.timeScale,
+      rightPriceScale: theme.rightPriceScale,
     });
 
     // v5.0 API: Pass CandlestickSeries as first argument
