@@ -34,7 +34,7 @@ export function MarketsSection({ pairs, onQuickTrade, onToggleFavorite }: Market
         <MarketPanicIndex />
       </div>
       
-      <div className="grid grid-cols-1 @lg:grid-cols-2 @4xl:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 @lg:grid-cols-2 @5xl:grid-cols-4 gap-4">
         {displayPairs.map((pair) => (
           <ForexCard
             key={pair.symbol}

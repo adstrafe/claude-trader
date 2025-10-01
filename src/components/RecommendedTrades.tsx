@@ -268,7 +268,7 @@ export function RecommendedTrades({ pairs, riskProfile, onTrade }: RecommendedTr
       </div>
 
       {/* Desktop Grid */}
-      <div className="@md:grid grid-cols-1 @2xl:grid-cols-2 @3xl:grid-cols-3 @5xl:grid-cols-4 gap-4 hidden">
+      <div className="@md:grid grid-cols-1 @lg:grid-cols-2 @5xl:grid-cols-4 gap-4 hidden">
         {recommendations.map((trade) => (
           <TradeCard key={trade.id} trade={trade} onTrade={onTrade} />
         ))}

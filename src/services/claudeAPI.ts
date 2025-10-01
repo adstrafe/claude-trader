@@ -29,7 +29,7 @@ export const generateTradeSuggestions = async (
     MAVERICK: "Aggressive approach: Use large lot sizes (1.0-10.0), wide stops, high risk scores (70-90), include volatile pairs like crypto and exotic currencies"
   };
 
-  const prompt = `You are an AI trading assistant. Generate 5 diverse trade suggestions based on these forex pairs:
+  const prompt = `You are an AI trading assistant. Generate 4 diverse trade suggestions based on these forex pairs:
 
 ${pairs.map(p => `${p.symbol}: Current Price ${p.price}, 24h Change ${p.changePercent}%`).join("\n")}
 
