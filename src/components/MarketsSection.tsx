@@ -1,5 +1,5 @@
 import { ForexCard } from "./ForexCard";
-import { MarketPanicIndex } from "./MarketPanicIndex";
+import { MarketVolatilityIndex } from "./MarketVolatilityIndex";
 import { ForexPair } from "@/lib/mockData";
 import { TrendingUp } from "lucide-react";
 import { Button } from "./ui/button";
@@ -31,7 +31,7 @@ export function MarketsSection({ pairs, onQuickTrade, onToggleFavorite }: Market
       </div>
       
       <div className="mb-4">
-        <MarketPanicIndex />
+        <MarketVolatilityIndex pairs={pairs} />
       </div>
       
       <div className="grid grid-cols-1 @lg:grid-cols-2 @5xl:grid-cols-4 gap-4">
