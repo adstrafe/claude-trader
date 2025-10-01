@@ -7,7 +7,6 @@ import { AIAssistant } from "@/components/AIAssistant";
 import { PositionCard } from "@/components/PositionCard";
 import { QuickTradeModal } from "@/components/QuickTradeModal";
 import { DailyCheckIn } from "@/components/DailyCheckIn";
-import { GhostTrades } from "@/components/GhostTrades";
 import { MarketPanicIndex } from "@/components/MarketPanicIndex";
 import { TradeBattleMode } from "@/components/TradeBattleMode";
 import { MOCK_PAIRS, MOCK_OPEN_POSITIONS, ForexPair } from "@/lib/mockData";
@@ -120,8 +119,6 @@ export default function Dashboard() {
               ))}
             </div>
           </section>
-
-          <GhostTrades />
 
           {/* AI Suggestions - Battle Mode */}
           <section>
