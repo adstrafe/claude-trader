@@ -11,7 +11,7 @@ interface PositionsSectionProps {
 
 export function PositionsSection({ positions, onClosePosition }: PositionsSectionProps) {
   return (
-    <section>
+    <section className="@container">
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2">
           <BarChart3 className="h-5 w-5 text-primary" />
@@ -28,7 +28,7 @@ export function PositionsSection({ positions, onClosePosition }: PositionsSectio
           No open positions
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 @lg:grid-cols-2 @4xl:grid-cols-3 gap-4">
           {positions.slice(0, 3).map((position) => (
             <PositionCard
               key={position.id}
