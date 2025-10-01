@@ -1,6 +1,7 @@
 import { ForexCard } from "./ForexCard";
 import { MarketPanicIndex } from "./MarketPanicIndex";
 import { ForexPair } from "@/lib/mockData";
+import { TrendingUp } from "lucide-react";
 
 interface MarketsSectionProps {
   pairs: ForexPair[];
@@ -11,7 +12,10 @@ export function MarketsSection({ pairs, onQuickTrade }: MarketsSectionProps) {
   return (
     <section className="@container">
       <div className="flex items-center justify-between mb-4">
-        <h2 className="text-xl font-semibold">Markets</h2>
+        <div className="flex items-center gap-2">
+          <TrendingUp className="h-5 w-5 text-primary" />
+          <h2 className="text-xl font-semibold">Markets</h2>
+        </div>
       </div>
       
       <div className="mb-4">

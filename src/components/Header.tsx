@@ -14,7 +14,7 @@ export function Header({ darkMode, onToggleDarkMode, balance = 50000 }: HeaderPr
   const [showMobileMenu, setShowMobileMenu] = useState(false);
 
   return (
-    <header className="border-b sticky top-0 bg-card z-10">
+    <header className="border-b sticky top-0 bg-card z-50 h-[65px]">
       <div className="flex items-center justify-between px-4 py-3">
         <div className="flex items-center gap-4">
           <div className="flex items-center">

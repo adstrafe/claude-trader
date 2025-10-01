@@ -2,6 +2,7 @@ import { Link } from "react-router-dom";
 import { Button } from "./ui/button";
 import { PositionCard } from "./PositionCard";
 import { Position } from "@/lib/mockData";
+import { BarChart3 } from "lucide-react";
 
 interface PositionsSectionProps {
   positions: Position[];
@@ -12,7 +13,10 @@ export function PositionsSection({ positions, onClosePosition }: PositionsSectio
   return (
     <section>
       <div className="flex items-center justify-between mb-4">
-        <h2 className="text-xl font-semibold">Open Positions</h2>
+        <div className="flex items-center gap-2">
+          <BarChart3 className="h-5 w-5 text-primary" />
+          <h2 className="text-xl font-semibold">Open Positions</h2>
+        </div>
         <Link to="/positions">
           <Button variant="ghost" size="sm">
             View All
