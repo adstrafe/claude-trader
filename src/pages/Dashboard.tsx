@@ -15,6 +15,7 @@ import { priceSimulator } from "@/lib/priceSimulator";
 import { generateTradeSuggestions, TradeSuggestion } from "@/services/claudeAPI";
 import { useRiskProfile } from "@/lib/riskProfiles";
 import { emotionDetector } from "@/lib/emotionDetection";
+import { useIsMobile } from "@/hooks/use-mobile";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 
@@ -24,7 +25,8 @@ export default function Dashboard() {
   const [suggestions, setSuggestions] = useState<TradeSuggestion[]>([]);
   const [selectedPair, setSelectedPair] = useState<ForexPair | null>(null);
   const [showQuickTrade, setShowQuickTrade] = useState(false);
-  const [showAI, setShowAI] = useState(false);
+  const isMobile = useIsMobile();
+  const [showAI, setShowAI] = useState(!isMobile); // Open by default on desktop, closed on mobile
   const [darkMode, setDarkMode] = useState(true);
   const [loadingSuggestions, setLoadingSuggestions] = useState(false);
   const { getProfile } = useRiskProfile();
@@ -33,6 +35,15 @@ export default function Dashboard() {
   useEffect(() => {
     document.documentElement.classList.toggle("dark", darkMode);
   }, [darkMode]);
+
+  // Handle screen size changes - close AI on mobile, open on desktop
+  useEffect(() => {
+    if (isMobile) {
+      setShowAI(false);
+    } else {
+      setShowAI(true);
+    }
+  }, [isMobile]);
 
   useEffect(() => {
     priceSimulator.start(pairs, setPairs);
@@ -92,7 +103,10 @@ export default function Dashboard() {
 
       <div className="flex max-w-full overflow-x-hidden">
         {/* Main Content */}
-        <main className="flex-1 p-4 lg:p-6 space-y-6 max-w-full overflow-x-hidden">
+        <main className={cn(
+          "flex-1 p-4 lg:p-6 space-y-6 max-w-full overflow-x-hidden transition-all",
+          showAI ? "lg:mr-96" : ""
+        )}>
           <DailyCheckIn />
 
           <StatsBar
@@ -145,18 +159,16 @@ export default function Dashboard() {
 
         {/* AI Sidebar - Desktop */}
         {showAI && (
-          <aside className="hidden lg:block w-96 border-l bg-card transition-all">
-            <div className="sticky top-[57px] h-[calc(100vh-57px)]">
-              <AIAssistant
-                pairs={pairs}
-                openPositions={positions.length}
-                onClose={() => setShowAI(false)}
-                onTradeFromAI={(trade) => {
-                  const pair = pairs.find((p) => p.symbol === trade.pair);
-                  if (pair) handleQuickTrade(pair);
-                }}
-              />
-            </div>
+          <aside className="hidden lg:block w-96 border-l bg-card transition-all fixed right-0 top-[57px] h-[calc(100vh-57px)] z-40">
+            <AIAssistant
+              pairs={pairs}
+              openPositions={positions.length}
+              onClose={() => setShowAI(false)}
+              onTradeFromAI={(trade) => {
+                const pair = pairs.find((p) => p.symbol === trade.pair);
+                if (pair) handleQuickTrade(pair);
+              }}
+            />
           </aside>
         )}
 
