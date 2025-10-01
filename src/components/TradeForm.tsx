@@ -1,11 +1,14 @@
 import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
+import { Link } from "react-router-dom";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
 import { Label } from "./ui/label";
+import { Alert, AlertDescription } from "./ui/alert";
 import { calculateAutoTPSL, formatPrice } from "@/lib/tradingUtils";
 import { useRiskProfile } from "@/lib/riskProfiles";
 import { toast } from "sonner";
+import { AlertTriangle, Settings } from "lucide-react";
 
 interface TradeFormData {
   lots: number;
@@ -151,9 +154,39 @@ export const TradeForm = ({ symbol, currentPrice, direction, onSubmit }: TradeFo
             />
           </div>
         </div>
-      </div>
+        </div>
 
-      <div className="rounded-lg bg-muted p-3 space-y-2">
+        {/* Risk Warning Alert */}
+        {riskScore > profile.warnThreshold && (
+          <Alert className={riskScore > profile.blockThreshold ? "border-danger" : "border-warning"}>
+            <AlertTriangle className="h-4 w-4" />
+            <AlertDescription>
+              {riskScore > profile.blockThreshold ? (
+                <>
+                  <strong>Trade blocked:</strong> Risk score {riskScore.toFixed(0)}/100 exceeds your limit of {profile.blockThreshold}. 
+                  You can increase your risk tolerance in{" "}
+                  <Link to="/settings#risk" className="text-purple-500 hover:underline inline-flex items-center gap-1">
+                    <Settings className="h-3 w-3" />
+                    Settings
+                  </Link>
+                  .
+                </>
+              ) : (
+                <>
+                  <strong>High risk warning:</strong> Risk score {riskScore.toFixed(0)}/100 is above your warning threshold of {profile.warnThreshold}. 
+                  Consider reducing lot size or adjust your risk profile in{" "}
+                  <Link to="/settings#risk" className="text-purple-500 hover:underline inline-flex items-center gap-1">
+                    <Settings className="h-3 w-3" />
+                    Settings
+                  </Link>
+                  .
+                </>
+              )}
+            </AlertDescription>
+          </Alert>
+        )}
+
+        <div className="rounded-lg bg-muted p-3 space-y-2">
         <div className="flex justify-between text-sm">
           <span className="text-muted-foreground">Risk Score</span>
           <span
