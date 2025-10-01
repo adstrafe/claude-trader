@@ -6,37 +6,141 @@ import { AIAssistant } from "@/components/AIAssistant";
 import { PositionCard } from "@/components/PositionCard";
 import { QuickTradeModal } from "@/components/QuickTradeModal";
 import { EmotionScoreBar } from "@/components/EmotionScoreBar";
-import { DailyCheckIn } from "@/components/DailyCheckIn";
 import { GhostTrades } from "@/components/GhostTrades";
 import { MarketPanicIndex } from "@/components/MarketPanicIndex";
 import { TradeBattleMode } from "@/components/TradeBattleMode";
-import { MOCK_PAIRS, MOCK_OPEN_POSITIONS, ForexPair } from "@/lib/mockData";
-import { priceSimulator } from "@/lib/priceSimulator";
+import { ForexPair, Position } from "@/lib/mockData";
 import { generateTradeSuggestions, TradeSuggestion } from "@/services/claudeAPI";
 import { useRiskProfile } from "@/lib/riskProfiles";
 import { emotionDetector } from "@/lib/emotionDetection";
 import { cn } from "@/lib/utils";
 import { Link } from "react-router-dom";
 import { toast } from "sonner";
+import { yourBourseAPI } from "@/services/yourBourseAPI";
+import { 
+  convertSymbolsToForexPairs, 
+  convertYBPositionsToPositions,
+  filterPopularForexPairs 
+} from "@/lib/yourBourseAdapter";
+import { simulatedTrading } from "@/lib/simulatedTrading";
 
 export default function Dashboard() {
-  const [pairs, setPairs] = useState<ForexPair[]>(MOCK_PAIRS);
-  const [positions, setPositions] = useState(MOCK_OPEN_POSITIONS);
+  const [pairs, setPairs] = useState<ForexPair[]>([]);
+  const [positions, setPositions] = useState<Position[]>([]);
   const [suggestions, setSuggestions] = useState<TradeSuggestion[]>([]);
   const [selectedPair, setSelectedPair] = useState<ForexPair | null>(null);
   const [showQuickTrade, setShowQuickTrade] = useState(false);
   const [showAI, setShowAI] = useState(false);
   const [darkMode, setDarkMode] = useState(true);
   const [loadingSuggestions, setLoadingSuggestions] = useState(false);
+  const [accountBalance, setAccountBalance] = useState(0);
+  const [loading, setLoading] = useState(true);
   const { getProfile } = useRiskProfile();
 
   useEffect(() => {
     document.documentElement.classList.toggle("dark", darkMode);
   }, [darkMode]);
 
+  // Initialize API connection and load data
   useEffect(() => {
-    priceSimulator.start(pairs, setPairs);
-    return () => priceSimulator.stop();
+    const initializeAPI = async () => {
+      try {
+        setLoading(true);
+        
+        // Authenticate
+        await yourBourseAPI.authenticate();
+        toast.success("Connected to YourBourse API");
+
+        // Load symbols
+        const symbols = await yourBourseAPI.getSymbols();
+        
+        if (!Array.isArray(symbols)) {
+          toast.error('Invalid symbols data format from API');
+          setLoading(false);
+          return;
+        }
+        
+        const forexPairs = convertSymbolsToForexPairs(symbols);
+        const popularPairs = filterPopularForexPairs(forexPairs);
+        
+        // Set initial pairs (will update via WebSocket)
+        setPairs(popularPairs);
+
+        // Use simulated balance for demo
+        setAccountBalance(simulatedTrading.getEquity());
+
+        // Load simulated positions
+        const simulatedPositions = simulatedTrading.getOpenTrades().map(t => 
+          simulatedTrading.toPosition(t)
+        );
+        setPositions(simulatedPositions);
+
+        // Connect WebSocket for real-time updates
+        await yourBourseAPI.connectWebSocket();
+
+        // Subscribe to price updates for each symbol
+        popularPairs.forEach(pair => {
+          yourBourseAPI.subscribeToPrices(pair.symbol, (data) => {
+            setPairs(prev => prev.map(p => {
+              // WebSocket data may use 's' or match by symbol name
+              const symbolMatch = data.s === p.symbol || data.n === p.symbol;
+              if (symbolMatch && data.a && data.bid) {
+                const newPrice = (data.a + data.bid) / 2;
+                const change = newPrice - p.price;
+                const changePercent = p.price !== 0 ? (change / p.price) * 100 : 0;
+                
+                // Update simulated trades with new prices
+                const openTrades = simulatedTrading.getOpenTrades();
+                let tradesUpdated = false;
+                openTrades.forEach(trade => {
+                  if (trade.symbol === p.symbol) {
+                    const updatedTrade = simulatedTrading.updateTradePrice(trade.id, newPrice);
+                    tradesUpdated = true;
+                    if (updatedTrade && updatedTrade.status === 'CLOSED') {
+                      // Trade hit TP or SL
+                      toast.info(`Position closed automatically`, {
+                        description: `${updatedTrade.symbol} ${updatedTrade.direction} - P/L: ${updatedTrade.pnl >= 0 ? '+' : ''}$${updatedTrade.pnl.toFixed(2)}`
+                      });
+                    }
+                  }
+                });
+                
+                // Update positions display if any trades changed
+                if (tradesUpdated) {
+                  setPositions(simulatedTrading.getOpenTrades().map(t => 
+                    simulatedTrading.toPosition(t)
+                  ));
+                  setAccountBalance(simulatedTrading.getEquity());
+                }
+                
+                return {
+                  ...p,
+                  price: newPrice,
+                  change: change,
+                  changePercent: changePercent,
+                  high24h: Math.max(p.high24h, newPrice),
+                  low24h: Math.min(p.low24h, newPrice),
+                };
+              }
+              return p;
+            }));
+          });
+        });
+
+        setLoading(false);
+      } catch (error) {
+        console.error("Failed to initialize API:", error);
+        toast.error("Failed to connect to YourBourse API");
+        setLoading(false);
+      }
+    };
+
+    initializeAPI();
+
+    // Cleanup
+    return () => {
+      yourBourseAPI.disconnectWebSocket();
+    };
   }, []);
 
   const loadAISuggestions = async () => {
@@ -80,7 +184,9 @@ export default function Dashboard() {
             <h1 className="text-xl font-bold">AI Trading Platform</h1>
             <div className="hidden sm:flex items-center gap-2 text-sm">
               <span className="text-muted-foreground">Balance:</span>
-              <span className="data-cell font-semibold">$50,000.00</span>
+              <span className="data-cell font-semibold">
+                ${accountBalance.toFixed(2)}
+              </span>
             </div>
           </div>
           <div className="flex items-center gap-3">
@@ -114,14 +220,21 @@ export default function Dashboard() {
       <div className="flex">
         {/* Main Content */}
         <main className="flex-1 p-4 lg:p-6 space-y-6">
-          <DailyCheckIn />
-          
-          <MarketPanicIndex />
+          {loading ? (
+            <div className="flex items-center justify-center min-h-[400px]">
+              <div className="text-center space-y-4">
+                <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+                <p className="text-muted-foreground">Connecting to YourBourse API...</p>
+              </div>
+            </div>
+          ) : (
+            <>
+              <MarketPanicIndex />
 
-          {/* Disclaimer */}
-          <div className="rounded-lg bg-warning/10 border border-warning/20 p-3 text-sm text-warning">
-            <strong>Educational Demo:</strong> This is a simulation. No real money or trading occurs. Not financial advice.
-          </div>
+              {/* Disclaimer */}
+              <div className="rounded-lg bg-primary/10 border border-primary/20 p-3 text-sm text-primary">
+                <strong>Demo Mode:</strong> Using real-time YourBourse price data with simulated trading. No real money at risk.
+              </div>
 
           {/* Stats Bar */}
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
@@ -205,15 +318,33 @@ export default function Dashboard() {
                   <PositionCard
                     key={position.id}
                     position={position}
-                    onClose={() => {
-                      setPositions(positions.filter((p) => p.id !== position.id));
-                      toast.success(`Position ${position.id} closed`);
+                    onClose={async () => {
+                      try {
+                        // Close simulated trade
+                        const closedTrade = simulatedTrading.closeTrade(position.id);
+                        if (closedTrade) {
+                          toast.success(`Position closed (DEMO)`, {
+                            description: `P/L: ${closedTrade.pnl >= 0 ? '+' : ''}$${closedTrade.pnl.toFixed(2)}`
+                          });
+                          
+                          // Reload positions
+                          const simulatedPositions = simulatedTrading.getOpenTrades().map(t => 
+                            simulatedTrading.toPosition(t)
+                          );
+                          setPositions(simulatedPositions);
+                          setAccountBalance(simulatedTrading.getEquity());
+                        }
+                      } catch (error) {
+                        toast.error(`Failed to close position: ${error}`);
+                      }
                     }}
                   />
                 ))}
               </div>
             )}
           </section>
+            </>
+          )}
         </main>
 
         {/* AI Sidebar - Desktop */}
@@ -256,6 +387,35 @@ export default function Dashboard() {
         pair={selectedPair}
         open={showQuickTrade}
         onOpenChange={setShowQuickTrade}
+        onTrade={async (direction, data) => {
+          try {
+            // Create simulated trade instead of real order
+            const trade = simulatedTrading.openTrade({
+              symbol: selectedPair!.symbol,
+              direction: direction,
+              lots: data.lots,
+              entryPrice: selectedPair!.price,
+              stopLoss: data.stopLoss,
+              takeProfit: data.takeProfit,
+            });
+            
+            toast.success(`${direction} order placed for ${selectedPair!.symbol} (DEMO)`, {
+              description: `${data.lots} lots @ ${selectedPair!.price.toFixed(5)}`
+            });
+            
+            // Track emotional behavior
+            emotionDetector.recordTrade();
+            
+            // Reload positions
+            const simulatedPositions = simulatedTrading.getOpenTrades().map(t => 
+              simulatedTrading.toPosition(t)
+            );
+            setPositions(simulatedPositions);
+            setAccountBalance(simulatedTrading.getEquity());
+          } catch (error) {
+            toast.error(`Failed to place order: ${error}`);
+          }
+        }}
       />
     </div>
   );
