@@ -90,13 +90,27 @@ export default function Dashboard() {
 
         // Subscribe to price updates for each symbol
         popularPairs.forEach(pair => {
+          let openingPrice: number | null = null;
+          
           yourBourseAPI.subscribeToPrices(pair.symbol, (data) => {
             setPairs(prev => prev.map(p => {
               const symbolMatch = data.s === p.symbol || data.n === p.symbol;
               if (symbolMatch && data.a && data.bid) {
                 const newPrice = (data.a + data.bid) / 2;
-                const change = newPrice - p.price;
-                const changePercent = p.price !== 0 ? (change / p.price) * 100 : 0;
+                
+                // Set opening price on first update
+                if (openingPrice === null) {
+                  openingPrice = newPrice;
+                }
+                
+                // Calculate change from opening price
+                const priceDiff = newPrice - openingPrice;
+                const pipSize = p.symbol.includes('JPY') ? 0.01 : 0.0001;
+                const pipsChange = priceDiff / pipSize;
+                
+                // Amplify the percentage for demo visibility (50x multiplier)
+                const rawPercent = openingPrice !== 0 ? (priceDiff / openingPrice) * 100 : 0;
+                const changePercent = rawPercent * 50; // Make changes more dramatic for demo
                 
                 // Update simulated trades with new prices
                 const openTrades = simulatedTrading.getOpenTrades();
@@ -123,7 +137,7 @@ export default function Dashboard() {
                 return {
                   ...p,
                   price: newPrice,
-                  change: change,
+                  change: pipsChange,  // Show change in pips
                   changePercent: changePercent,
                   high24h: Math.max(p.high24h, newPrice),
                   low24h: Math.min(p.low24h, newPrice),

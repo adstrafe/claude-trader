@@ -27,7 +27,7 @@ export const ForexCard = ({ pair, onQuickTrade }: ForexCardProps) => {
           {isPositive ? <TrendingUp className="h-4 w-4" /> : <TrendingDown className="h-4 w-4" />}
           <span className="text-sm font-medium">
             {isPositive ? "+" : ""}
-            {pair.changePercent.toFixed(2)}%
+            {pair.changePercent.toFixed(3)}%
           </span>
         </div>
       </div>
