@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { MessageCircle } from "lucide-react";
+import { Bot } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Header } from "@/components/Header";
 import { AIAssistant } from "@/components/AIAssistant";
@@ -200,17 +200,18 @@ export default function Dashboard() {
   }, [emotionScore]);
 
   return (
-    <div className="min-h-screen bg-background max-w-full overflow-x-hidden" style={{ borderTop: `3px solid ${borderColor}` }}>
+    <>
       <Header 
         darkMode={darkMode} 
         onToggleDarkMode={() => setDarkMode(!darkMode)}
         balance={accountBalance}
       />
-
-      <div className="flex max-w-full overflow-x-hidden">
+      
+      <div className="min-h-screen bg-background max-w-full overflow-x-hidden">
+        <div className="flex max-w-full overflow-x-hidden relative">
         {/* Main Content */}
         <main className={cn(
-          "flex-1 p-4 lg:p-6 space-y-6 max-w-full overflow-x-hidden transition-all",
+          "flex-1 p-4 lg:p-6 space-y-6 max-w-full overflow-x-hidden transition-all pt-6",
           showAI ? "lg:mr-96" : ""
         )}>
           {loading ? (
@@ -284,7 +285,7 @@ export default function Dashboard() {
 
         {/* AI Sidebar - Desktop */}
         <aside className={cn(
-          "hidden lg:block fixed right-0 top-0 h-screen w-96 border-l bg-card transition-transform duration-300",
+          "hidden lg:block fixed right-0 top-[65px] h-[calc(100vh-65px)] w-96 transition-transform duration-300",
           showAI ? "translate-x-0" : "translate-x-full"
         )}>
           <AIAssistant
@@ -353,9 +354,10 @@ export default function Dashboard() {
           className="fixed bottom-6 right-6 h-14 w-14 rounded-full bg-purple-600 hover:bg-purple-700 text-white shadow-lg hover:shadow-xl transition-all duration-200 z-10"
           size="icon"
         >
-          <MessageCircle className="h-6 w-6" />
+          <Bot className="h-6 w-6" />
         </Button>
       )}
-    </div>
+      </div>
+    </>
   );
 }

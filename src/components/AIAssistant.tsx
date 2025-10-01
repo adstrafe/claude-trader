@@ -57,7 +57,7 @@ export const AIAssistant = ({ pairs, openPositions, onClose, onTradeFromAI }: AI
   };
 
   return (
-    <Card className="flex flex-col h-full">
+    <Card className="flex flex-col h-full rounded-none border-t-0 border-b-0">
       <div className="flex items-center justify-between p-4 border-b">
         <div className="flex items-center gap-2">
           <Bot className="h-5 w-5 text-primary" />
