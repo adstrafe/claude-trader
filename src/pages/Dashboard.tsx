@@ -22,6 +22,7 @@ import {
   filterPopularForexPairs 
 } from "@/lib/yourBourseAdapter";
 import { simulatedTrading } from "@/lib/simulatedTrading";
+import { applyFavoritesToPairs, toggleFavorite } from "@/lib/favorites";
 
 export default function Dashboard() {
   const [pairs, setPairs] = useState<ForexPair[]>([]);
@@ -73,8 +74,11 @@ export default function Dashboard() {
         const forexPairs = convertSymbolsToForexPairs(symbols);
         const popularPairs = filterPopularForexPairs(forexPairs);
         
+        // Apply favorites from cookies to the pairs
+        const pairsWithFavorites = applyFavoritesToPairs(popularPairs);
+        
         // Set initial pairs (will update via WebSocket)
-        setPairs(popularPairs);
+        setPairs(pairsWithFavorites);
 
         // Use simulated balance for demo
         setAccountBalance(simulatedTrading.getEquity());
@@ -196,6 +200,14 @@ export default function Dashboard() {
     setShowQuickTrade(true);
   };
 
+  const handleToggleFavorite = (symbol: string) => {
+    // Toggle favorite in cookies
+    toggleFavorite(symbol);
+    
+    // Refresh pairs with updated favorites
+    setPairs(prevPairs => applyFavoritesToPairs(prevPairs));
+  };
+
   const totalPnL = positions.reduce((sum, pos) => sum + pos.pnl, 0);
   const emotionScore = emotionDetector.getScore();
   const borderColor = emotionScore >= 70
@@ -269,6 +281,7 @@ export default function Dashboard() {
               <MarketsSection
                 pairs={pairs}
                 onQuickTrade={handleQuickTrade}
+                onToggleFavorite={handleToggleFavorite}
               />
 
               <RecommendedTrades
