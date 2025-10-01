@@ -1,15 +1,35 @@
-import { useState } from "react";
-import { Link } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { Link, useLocation } from "react-router-dom";
 import { ArrowLeft, TrendingUp, TrendingDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { MOCK_TRADE_HISTORY, TradeHistory } from "@/lib/mockData";
 import { formatPrice, formatRelativeTime } from "@/lib/tradingUtils";
 import { cn } from "@/lib/utils";
+import { simulatedTrading } from "@/lib/simulatedTrading";
+import { Position } from "@/lib/mockData";
 
 export default function History() {
-  const [trades] = useState<TradeHistory[]>(MOCK_TRADE_HISTORY);
+  const location = useLocation();
+  const [trades, setTrades] = useState<Position[]>([]);
   const [visibleCount, setVisibleCount] = useState(10);
+
+  const loadTrades = () => {
+    // Load closed trades from simulated trading system
+    const closedTrades = simulatedTrading.getClosedTrades();
+    const tradesAsPositions = closedTrades.map(trade => simulatedTrading.toPosition(trade));
+    setTrades(tradesAsPositions);
+  };
+
+  useEffect(() => {
+    loadTrades();
+  }, []);
+
+  // Update trades when returning to this page
+  useEffect(() => {
+    if (location.pathname === '/history') {
+      loadTrades();
+    }
+  }, [location.pathname]);
 
   const totalTrades = trades.length;
   const winningTrades = trades.filter((t) => t.pnl > 0).length;
