@@ -13,7 +13,14 @@ interface PositionCardProps {
 
 export const PositionCard = ({ position, onClose }: PositionCardProps) => {
   const isBuy = position.direction === "BUY";
-  const isProfit = position.pnl >= 0;
+  const isProfit = position.pnl > 0;
+  const isLoss = position.pnl < 0;
+  const isNeutral = position.pnl === 0;
+  
+  // Separate logic for percentage values
+  const isPercentProfit = position.pnlPercent > 0.01;
+  const isPercentLoss = position.pnlPercent < -0.01;
+  const isPercentNeutral = Math.abs(position.pnlPercent) <= 0.01;
 
   return (
     <Card className="p-4">
@@ -31,13 +38,23 @@ export const PositionCard = ({ position, onClose }: PositionCardProps) => {
             </span>
           </div>
         </div>
-        <div className={cn("text-right", isProfit ? "text-success" : "text-danger")}>
-          <div className="data-cell font-bold">
-            {isProfit ? "+" : ""}${position.pnl.toFixed(2)}
+        <div className="text-right">
+          <div className={cn("data-cell font-bold", 
+            isProfit ? "text-success" : 
+            isLoss ? "text-danger" : 
+            "text-muted-foreground"
+          )}>
+            {isProfit ? "+" : isLoss ? "-" : ""}${Math.abs(position.pnl).toFixed(2)}
           </div>
-          <div className="text-sm">
-            {isProfit ? "+" : ""}
-            {position.pnlPercent.toFixed(2)}%
+          <div className={cn("text-sm", 
+            isPercentProfit ? "text-success" : 
+            isPercentLoss ? "text-danger" : 
+            "text-muted-foreground"
+          )}>
+            {Math.abs(position.pnlPercent) < 0.01 ? 
+              "0.00" : 
+              position.pnlPercent.toFixed(2)
+            }%
           </div>
         </div>
       </div>

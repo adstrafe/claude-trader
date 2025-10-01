@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useLocation } from "react-router-dom";
 import { Bot } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Header } from "@/components/Header";
@@ -25,6 +26,7 @@ import { simulatedTrading } from "@/lib/simulatedTrading";
 import { applyFavoritesToPairs, toggleFavorite } from "@/lib/favorites";
 
 export default function Dashboard() {
+  const location = useLocation();
   const [pairs, setPairs] = useState<ForexPair[]>([]);
   const [positions, setPositions] = useState<Position[]>([]);
   const [suggestions, setSuggestions] = useState<TradeSuggestion[]>([]);
@@ -135,7 +137,7 @@ export default function Dashboard() {
                     tradesUpdated = true;
                     if (updatedTrade && updatedTrade.status === 'CLOSED') {
                       toast.info(`Position closed automatically`, {
-                        description: `${updatedTrade.symbol} ${updatedTrade.direction} - P/L: ${updatedTrade.pnl >= 0 ? '+' : ''}$${updatedTrade.pnl.toFixed(2)}`
+                        description: `${updatedTrade.symbol} ${updatedTrade.direction} - P/L: ${updatedTrade.pnl > 0 ? '+' : updatedTrade.pnl < 0 ? '-' : ''}$${Math.abs(updatedTrade.pnl).toFixed(2)}`
                       });
                     }
                   }
@@ -190,6 +192,17 @@ export default function Dashboard() {
     const interval = setInterval(checkRiskProfile, 2000);
     return () => clearInterval(interval);
   }, [currentRiskProfile.name, getProfile]);
+
+  // Update positions when returning to dashboard
+  useEffect(() => {
+    if (location.pathname === '/') {
+      const simulatedPositions = simulatedTrading.getOpenTrades().map(t => 
+        simulatedTrading.toPosition(t)
+      );
+      setPositions(simulatedPositions);
+      setAccountBalance(simulatedTrading.getEquity());
+    }
+  }, [location.pathname]);
 
   const loadAISuggestions = async () => {
     setLoadingSuggestions(true);
@@ -298,7 +311,7 @@ export default function Dashboard() {
                     const closedTrade = simulatedTrading.closeTrade(positionId);
                     if (closedTrade) {
                       toast.success(`Position closed (DEMO)`, {
-                        description: `P/L: ${closedTrade.pnl >= 0 ? '+' : ''}$${closedTrade.pnl.toFixed(2)}`
+                        description: `P/L: ${closedTrade.pnl > 0 ? '+' : closedTrade.pnl < 0 ? '-' : ''}$${Math.abs(closedTrade.pnl).toFixed(2)}`
                       });
                       
                       const simulatedPositions = simulatedTrading.getOpenTrades().map(t => 

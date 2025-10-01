@@ -133,7 +133,7 @@ export const TradeForm = ({ symbol, currentPrice, direction, onSubmit }: TradeFo
             <Input
               id="stopLoss"
               type="number"
-              step={symbol === "BTCUSD" ? "1" : symbol.includes("JPY") ? "0.1" : "0.0001"}
+              step={symbol === "BTCUSD" ? "0.01" : symbol.includes("JPY") ? "0.001" : "0.00001"}
               {...register("stopLoss", { valueAsNumber: true })}
               onChange={() => setAutoTPSL(false)}
             />
@@ -145,7 +145,7 @@ export const TradeForm = ({ symbol, currentPrice, direction, onSubmit }: TradeFo
             <Input
               id="takeProfit"
               type="number"
-              step={symbol === "BTCUSD" ? "1" : symbol.includes("JPY") ? "0.1" : "0.0001"}
+              step={symbol === "BTCUSD" ? "0.01" : symbol.includes("JPY") ? "0.001" : "0.00001"}
               {...register("takeProfit", { valueAsNumber: true })}
               onChange={() => setAutoTPSL(false)}
             />

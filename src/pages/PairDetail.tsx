@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useParams, Link } from "react-router-dom";
+import { useParams, Link, useNavigate } from "react-router-dom";
 import { ArrowLeft, RefreshCw, Moon, Sun } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -16,11 +16,13 @@ import {
   filterPopularForexPairs 
 } from "@/lib/yourBourseAdapter";
 import { priceStorage, PriceData } from "@/lib/priceStorage";
+import { simulatedTrading } from "@/lib/simulatedTrading";
 
 const TIMEFRAMES = ["1m", "5m", "15m", "1h", "4h", "1D"];
 
 export default function PairDetail() {
   const { symbol } = useParams<{ symbol: string }>();
+  const navigate = useNavigate();
   const [pair, setPair] = useState<ForexPair | null>(null);
   const [timeframe, setTimeframe] = useState("15m");
   const [direction, setDirection] = useState<"BUY" | "SELL">("BUY");
@@ -236,9 +238,32 @@ export default function PairDetail() {
   }
 
   const handleTrade = (data: any) => {
-    toast.success(`${direction} order placed for ${pair.symbol}`, {
-      description: `${data.lots} lots @ ${formatPrice(pair.price, pair.symbol)}`,
-    });
+    if (!pair) return;
+    
+    try {
+      // Create simulated trade
+      const trade = simulatedTrading.openTrade({
+        symbol: pair.symbol,
+        direction: direction,
+        lots: data.lots,
+        entryPrice: pair.price,
+        stopLoss: data.stopLoss,
+        takeProfit: data.takeProfit,
+      });
+      
+      toast.success(`${direction} order placed for ${pair.symbol}`, {
+        description: `${data.lots} lots @ ${formatPrice(pair.price, pair.symbol)}`,
+      });
+      
+      // Navigate back to dashboard to see the new position
+      setTimeout(() => {
+        navigate('/');
+      }, 1500);
+      
+    } catch (error) {
+      console.error('Error placing trade:', error);
+      toast.error('Failed to place trade');
+    }
   };
 
   return (

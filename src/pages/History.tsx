@@ -1,15 +1,35 @@
-import { useState } from "react";
-import { Link } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { Link, useLocation } from "react-router-dom";
 import { ArrowLeft, TrendingUp, TrendingDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { MOCK_TRADE_HISTORY, TradeHistory } from "@/lib/mockData";
 import { formatPrice, formatRelativeTime } from "@/lib/tradingUtils";
 import { cn } from "@/lib/utils";
+import { simulatedTrading } from "@/lib/simulatedTrading";
+import { Position } from "@/lib/mockData";
 
 export default function History() {
-  const [trades] = useState<TradeHistory[]>(MOCK_TRADE_HISTORY);
+  const location = useLocation();
+  const [trades, setTrades] = useState<Position[]>([]);
   const [visibleCount, setVisibleCount] = useState(10);
+
+  const loadTrades = () => {
+    // Load closed trades from simulated trading system
+    const closedTrades = simulatedTrading.getClosedTrades();
+    const tradesAsPositions = closedTrades.map(trade => simulatedTrading.toPosition(trade));
+    setTrades(tradesAsPositions);
+  };
+
+  useEffect(() => {
+    loadTrades();
+  }, []);
+
+  // Update trades when returning to this page
+  useEffect(() => {
+    if (location.pathname === '/history') {
+      loadTrades();
+    }
+  }, [location.pathname]);
 
   const totalTrades = trades.length;
   const winningTrades = trades.filter((t) => t.pnl > 0).length;
@@ -81,7 +101,14 @@ export default function History() {
               <tbody>
                 {trades.slice(0, visibleCount).map((trade) => {
                   const isBuy = trade.direction === "BUY";
-                  const isProfit = trade.pnl >= 0;
+                  const isProfit = trade.pnl > 0;
+                  const isLoss = trade.pnl < 0;
+                  const isNeutral = trade.pnl === 0;
+                  
+                  // Separate logic for percentage values
+                  const isPercentProfit = trade.pnlPercent > 0.01;
+                  const isPercentLoss = trade.pnlPercent < -0.01;
+                  const isPercentNeutral = Math.abs(trade.pnlPercent) <= 0.01;
 
                   return (
                     <tr key={trade.id} className="border-b hover:bg-accent/5">
@@ -105,11 +132,23 @@ export default function History() {
                       <td className="p-4 data-cell">
                         {trade.exitPrice ? formatPrice(trade.exitPrice, trade.symbol) : "-"}
                       </td>
-                      <td className={cn("p-4 font-bold data-cell", isProfit ? "text-success" : "text-danger")}>
-                        {isProfit ? "+" : ""}${trade.pnl.toFixed(2)}
-                        <div className="text-xs">
-                          {isProfit ? "+" : ""}
-                          {trade.pnlPercent.toFixed(2)}%
+                      <td className="p-4">
+                        <div className={cn("font-bold data-cell", 
+                          isProfit ? "text-success" : 
+                          isLoss ? "text-danger" : 
+                          "text-muted-foreground"
+                        )}>
+                          {isProfit ? "+" : isLoss ? "-" : ""}${Math.abs(trade.pnl).toFixed(2)}
+                        </div>
+                        <div className={cn("text-xs", 
+                          isPercentProfit ? "text-success" : 
+                          isPercentLoss ? "text-danger" : 
+                          "text-muted-foreground"
+                        )}>
+                          {Math.abs(trade.pnlPercent) < 0.01 ? 
+                            "0.00" : 
+                            trade.pnlPercent.toFixed(2)
+                          }%
                         </div>
                       </td>
                       <td className="p-4 text-sm text-muted-foreground">
