@@ -16,17 +16,25 @@ export interface TradeSuggestion {
   lots: number;
   riskScore: number;
   rationale: string;
+  confidence?: number;
 }
 
 export const generateTradeSuggestions = async (
   pairs: ForexPair[],
   riskProfile: RiskProfile
 ): Promise<TradeSuggestion[]> => {
+  const riskProfileGuidance = {
+    GUARDIAN: "Conservative approach: Use small lot sizes (0.01-0.2), tight stops, low risk scores (20-40), focus on major pairs with stable trends",
+    COPILOT: "Balanced approach: Use moderate lot sizes (0.1-0.5), standard stops, medium risk scores (40-60), mix of major and minor pairs",
+    MAVERICK: "Aggressive approach: Use large lot sizes (1.0-10.0), wide stops, high risk scores (70-90), include volatile pairs like crypto and exotic currencies"
+  };
+
   const prompt = `You are an AI trading assistant. Generate 5 diverse trade suggestions based on these forex pairs:
 
 ${pairs.map(p => `${p.symbol}: Current Price ${p.price}, 24h Change ${p.changePercent}%`).join("\n")}
 
 User's risk profile: ${riskProfile.name} (max lots: ${riskProfile.maxLots}, risk threshold: ${riskProfile.blockThreshold})
+${riskProfileGuidance[riskProfile.name as keyof typeof riskProfileGuidance] || riskProfileGuidance.COPILOT}
 
 Return ONLY a JSON array with this structure:
 [
@@ -36,13 +44,16 @@ Return ONLY a JSON array with this structure:
     "entry": <current_price>,
     "takeProfit": <tp_price>,
     "stopLoss": <sl_price>,
-    "lots": <0.01_to_max_lots>,
-    "riskScore": <0_to_100>,
-    "rationale": "<brief reason>"
+    "lots": <appropriate_for_risk_profile>,
+    "riskScore": <appropriate_for_risk_profile>,
+    "rationale": "<brief reason>",
+    "confidence": <70-95_high_confidence_score>
   }
 ]
 
-Make suggestions realistic with proper TP/SL distances and varying risk scores.`;
+Make suggestions realistic with proper TP/SL distances. Tailor lot sizes and risk scores to match the risk profile characteristics.
+
+IMPORTANT: Prioritize generating trades with HIGH CONFIDENCE (aim for 70-95% confidence scores). Focus on the most promising opportunities with strong technical setups, clear market signals, and favorable risk-reward ratios.`;
 
   try {
     const message = await client.messages.create({
