@@ -95,13 +95,6 @@ export default function Dashboard() {
         {/* Main Content */}
         <main className="flex-1 p-4 lg:p-6 space-y-6 max-w-full overflow-x-hidden">
           <DailyCheckIn />
-          
-          <MarketPanicIndex />
-
-          {/* Disclaimer */}
-          <div className="rounded-lg bg-warning/10 border border-warning/20 p-3 text-sm text-warning">
-            <strong>Educational Demo:</strong> This is a simulation. No real money or trading occurs. Not financial advice.
-          </div>
 
           {/* Stats Bar */}
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
@@ -125,6 +118,9 @@ export default function Dashboard() {
           <section>
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-xl font-semibold">Markets</h2>
+            </div>
+            <div className="mb-4">
+              <MarketPanicIndex />
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
               {pairs.map((pair) => (
