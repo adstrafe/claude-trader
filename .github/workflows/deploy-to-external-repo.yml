@@ -43,6 +43,6 @@ jobs:
           destination-github-username: 'adstrafe'
           destination-repository-name: 'adstrafe.github.io'
           user-email: github-actions@github.com
-          target-branch: main
+          target-branch: master
           commit-message: 'Deploy claude-trader build from ${{ github.sha }}'
 
