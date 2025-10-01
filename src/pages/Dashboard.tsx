@@ -9,6 +9,7 @@ import { QuickTradeModal } from "@/components/QuickTradeModal";
 import { DailyCheckIn } from "@/components/DailyCheckIn";
 import { MarketPanicIndex } from "@/components/MarketPanicIndex";
 import { TradeBattleMode } from "@/components/TradeBattleMode";
+import { RecommendedTrades, RecommendedTrade } from "@/components/RecommendedTrades";
 import { MOCK_PAIRS, MOCK_OPEN_POSITIONS, ForexPair } from "@/lib/mockData";
 import { priceSimulator } from "@/lib/priceSimulator";
 import { generateTradeSuggestions, TradeSuggestion } from "@/services/claudeAPI";
@@ -28,6 +29,7 @@ export default function Dashboard() {
   const [darkMode, setDarkMode] = useState(true);
   const [loadingSuggestions, setLoadingSuggestions] = useState(false);
   const { getProfile } = useRiskProfile();
+  const [currentRiskProfile, setCurrentRiskProfile] = useState(getProfile());
 
   useEffect(() => {
     document.documentElement.classList.toggle("dark", darkMode);
@@ -37,6 +39,21 @@ export default function Dashboard() {
     priceSimulator.start(pairs, setPairs);
     return () => priceSimulator.stop();
   }, []);
+
+  // Listen for risk profile changes
+  useEffect(() => {
+    const checkRiskProfile = () => {
+      const newProfile = getProfile();
+      if (newProfile.name !== currentRiskProfile.name) {
+        setCurrentRiskProfile(newProfile);
+        toast.success(`Risk profile changed to ${newProfile.name} - Recommendations will refresh automatically`);
+      }
+    };
+
+    // Check every 2 seconds for risk profile changes
+    const interval = setInterval(checkRiskProfile, 2000);
+    return () => clearInterval(interval);
+  }, [currentRiskProfile.name, getProfile]);
 
   const loadAISuggestions = async () => {
     setLoadingSuggestions(true);
@@ -71,12 +88,12 @@ export default function Dashboard() {
   }, [emotionScore]);
 
   return (
-    <div className="min-h-screen bg-background" style={{ borderTop: `3px solid ${borderColor}` }}>
+    <div className="min-h-screen bg-background max-w-full overflow-x-hidden" style={{ borderTop: `3px solid ${borderColor}` }}>
       <Header darkMode={darkMode} onToggleDarkMode={() => setDarkMode(!darkMode)} />
 
-      <div className="flex">
+      <div className="flex max-w-full overflow-x-hidden">
         {/* Main Content */}
-        <main className="flex-1 p-4 lg:p-6 space-y-6">
+        <main className="flex-1 p-4 lg:p-6 space-y-6 max-w-full overflow-x-hidden">
           <DailyCheckIn />
           
           <MarketPanicIndex />
@@ -100,7 +117,7 @@ export default function Dashboard() {
             </div>
             <div className="rounded-lg border bg-card p-4">
               <div className="text-sm text-muted-foreground">Risk Profile</div>
-              <div className="text-2xl font-bold">{getProfile().name}</div>
+              <div className="text-2xl font-bold">{currentRiskProfile.name}</div>
             </div>
           </div>
 
@@ -119,6 +136,17 @@ export default function Dashboard() {
               ))}
             </div>
           </section>
+
+          <RecommendedTrades 
+            pairs={pairs}
+            riskProfile={currentRiskProfile}
+            onTrade={(trade) => {
+              emotionDetector.recordTrade();
+              const pair = pairs.find((p) => p.symbol === trade.pair);
+              if (pair) handleQuickTrade(pair);
+            }}
+          />
+
 
           {/* AI Suggestions - Battle Mode */}
           <section>
