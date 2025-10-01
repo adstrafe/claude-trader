@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useParams, Link } from "react-router-dom";
+import { useParams, Link, useNavigate } from "react-router-dom";
 import { ArrowLeft, TrendingUp, TrendingDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -12,6 +12,7 @@ import { cn } from "@/lib/utils";
 
 export default function PositionDetail() {
   const { id } = useParams<{ id: string }>();
+  const navigate = useNavigate();
   const [position, setPosition] = useState<Position | null>(null);
   const [chartData, setChartData] = useState<CandlestickData[]>([]);
 
@@ -45,14 +46,16 @@ export default function PositionDetail() {
     }
   }, [id]);
 
+  const handleBack = () => {
+    navigate(-1); // Go back to previous page in browser history
+  };
+
   if (!position) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="text-center">
           <h2 className="text-2xl font-bold mb-4">Position Not Found</h2>
-          <Link to="/positions">
-            <Button>Back to Positions</Button>
-          </Link>
+          <Button onClick={handleBack}>Go Back</Button>
         </div>
       </div>
     );
@@ -74,11 +77,9 @@ export default function PositionDetail() {
     <div className="min-h-screen bg-background">
       <header className="border-b sticky top-0 bg-card z-10">
         <div className="flex items-center gap-4 px-4 py-3">
-          <Link to="/positions">
-            <Button variant="ghost" size="icon">
-              <ArrowLeft className="h-5 w-5" />
-            </Button>
-          </Link>
+          <Button variant="ghost" size="icon" onClick={handleBack}>
+            <ArrowLeft className="h-5 w-5" />
+          </Button>
           <div className="flex items-center gap-2">
             {isBuy ? (
               <TrendingUp className="h-5 w-5 text-success" />
