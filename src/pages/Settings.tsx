@@ -12,11 +12,20 @@ import { toast } from "sonner";
 export default function Settings() {
   const { getProfile, setProfile } = useRiskProfile();
   const [selectedRisk, setSelectedRisk] = useState(getProfile().name.toUpperCase());
+  const [aiPersonality, setAiPersonality] = useState(
+    localStorage.getItem('ai_personality') || 'polite'
+  );
 
   const handleRiskProfileChange = (profile: string) => {
     setSelectedRisk(profile);
     setProfile(profile);
     toast.success(`Risk profile changed to ${RISK_PROFILES[profile].name}`);
+  };
+
+  const handlePersonalityChange = (personality: string) => {
+    localStorage.setItem('ai_personality', personality);
+    setAiPersonality(personality);
+    toast.success(`AI personality set to ${personality === 'polite' ? 'Polite Assistant' : 'Brutal Honesty'} mode`);
   };
 
   return (
@@ -172,6 +181,43 @@ export default function Settings() {
                   Add an extra layer of security to your account
                 </p>
                 <Button variant="outline">Enable 2FA</Button>
+              </div>
+              <div className="pt-6 border-t">
+                <h3 className="font-semibold mb-4">AI Personality</h3>
+                <p className="text-sm text-muted-foreground mb-4">
+                  Choose how the AI assistant communicates with you
+                </p>
+                <div className="space-y-3">
+                  <div
+                    onClick={() => handlePersonalityChange('polite')}
+                    className={`p-4 rounded-lg border-2 cursor-pointer transition-all ${
+                      aiPersonality === 'polite'
+                        ? 'border-primary bg-primary/5'
+                        : 'border-border hover:border-primary/50'
+                    }`}
+                  >
+                    <div className="font-medium mb-1">Polite Assistant</div>
+                    <p className="text-sm text-muted-foreground">
+                      Professional and courteous communication style
+                    </p>
+                  </div>
+                  <div
+                    onClick={() => handlePersonalityChange('brutal')}
+                    className={`p-4 rounded-lg border-2 cursor-pointer transition-all ${
+                      aiPersonality === 'brutal'
+                        ? 'border-primary bg-primary/5'
+                        : 'border-border hover:border-primary/50'
+                    }`}
+                  >
+                    <div className="font-medium mb-1">Brutal Honesty</div>
+                    <p className="text-sm text-muted-foreground">
+                      Direct, no-nonsense feedback on your trading decisions
+                    </p>
+                    <p className="text-xs text-muted-foreground mt-2 italic">
+                      "This is your 3rd impulsive trade today. Statistics say you're about to lose money 🤷"
+                    </p>
+                  </div>
+                </div>
               </div>
             </Card>
           </TabsContent>

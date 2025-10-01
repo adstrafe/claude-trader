@@ -3,13 +3,18 @@ import { Menu, Moon, Sun, User, ChevronLeft, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ForexCard } from "@/components/ForexCard";
 import { AIAssistant } from "@/components/AIAssistant";
-import { AITradeSuggestion } from "@/components/AITradeSuggestion";
 import { PositionCard } from "@/components/PositionCard";
 import { QuickTradeModal } from "@/components/QuickTradeModal";
+import { EmotionScoreBar } from "@/components/EmotionScoreBar";
+import { DailyCheckIn } from "@/components/DailyCheckIn";
+import { GhostTrades } from "@/components/GhostTrades";
+import { MarketPanicIndex } from "@/components/MarketPanicIndex";
+import { TradeBattleMode } from "@/components/TradeBattleMode";
 import { MOCK_PAIRS, MOCK_OPEN_POSITIONS, ForexPair } from "@/lib/mockData";
 import { priceSimulator } from "@/lib/priceSimulator";
 import { generateTradeSuggestions, TradeSuggestion } from "@/services/claudeAPI";
 import { useRiskProfile } from "@/lib/riskProfiles";
+import { emotionDetector } from "@/lib/emotionDetection";
 import { cn } from "@/lib/utils";
 import { Link } from "react-router-dom";
 import { toast } from "sonner";
@@ -54,9 +59,20 @@ export default function Dashboard() {
   };
 
   const totalPnL = positions.reduce((sum, pos) => sum + pos.pnl, 0);
+  const emotionScore = emotionDetector.getScore();
+  const borderColor = emotionDetector.getBorderColor();
+
+  useEffect(() => {
+    if (emotionDetector.shouldShowWarning()) {
+      toast.warning('High Risk Pattern Detected', {
+        description: emotionDetector.getWarningMessage(),
+        duration: 7000
+      });
+    }
+  }, [emotionScore]);
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background" style={{ borderTop: `3px solid ${borderColor}` }}>
       {/* Top Bar */}
       <header className="border-b sticky top-0 bg-card z-10">
         <div className="flex items-center justify-between px-4 py-3">
@@ -67,7 +83,8 @@ export default function Dashboard() {
               <span className="data-cell font-semibold">$50,000.00</span>
             </div>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-3">
+            <EmotionScoreBar />
             <Link to="/history">
               <Button variant="ghost" size="sm" className="hidden md:flex">
                 History
@@ -97,6 +114,10 @@ export default function Dashboard() {
       <div className="flex">
         {/* Main Content */}
         <main className="flex-1 p-4 lg:p-6 space-y-6">
+          <DailyCheckIn />
+          
+          <MarketPanicIndex />
+
           {/* Disclaimer */}
           <div className="rounded-lg bg-warning/10 border border-warning/20 p-3 text-sm text-warning">
             <strong>Educational Demo:</strong> This is a simulation. No real money or trading occurs. Not financial advice.
@@ -145,42 +166,23 @@ export default function Dashboard() {
             </div>
           </section>
 
-          {/* AI Suggestions */}
+          <GhostTrades />
+
+          {/* AI Suggestions - Battle Mode */}
           <section>
             <div className="flex items-center justify-between mb-4">
-              <h2 className="text-xl font-semibold">AI Suggestions</h2>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={loadAISuggestions}
-                disabled={loadingSuggestions}
-              >
-                {loadingSuggestions ? "Generating..." : "Refresh"}
-              </Button>
+              <h2 className="text-xl font-semibold">Trade Battle Arena</h2>
             </div>
-            {suggestions.length === 0 ? (
-              <div className="rounded-lg border bg-card p-8 text-center">
-                <p className="text-muted-foreground mb-4">
-                  No AI suggestions yet. Click refresh to generate trading ideas.
-                </p>
-                <Button onClick={loadAISuggestions} disabled={loadingSuggestions}>
-                  Generate Suggestions
-                </Button>
-              </div>
-            ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
-                {suggestions.map((suggestion, idx) => (
-                  <AITradeSuggestion
-                    key={idx}
-                    suggestion={suggestion}
-                    onTrade={() => {
-                      const pair = pairs.find((p) => p.symbol === suggestion.pair);
-                      if (pair) handleQuickTrade(pair);
-                    }}
-                  />
-                ))}
-              </div>
-            )}
+            <TradeBattleMode
+              suggestions={suggestions}
+              onTrade={(suggestion) => {
+                emotionDetector.recordTrade();
+                const pair = pairs.find((p) => p.symbol === suggestion.pair);
+                if (pair) handleQuickTrade(pair);
+              }}
+              onLoadSuggestions={loadAISuggestions}
+              loading={loadingSuggestions}
+            />
           </section>
 
           {/* Open Positions */}
