@@ -1,11 +1,11 @@
 import { useState, useEffect } from "react";
-import { Menu, Moon, Sun, User, ChevronLeft, ChevronRight } from "lucide-react";
+import { MessageCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Header } from "@/components/Header";
 import { ForexCard } from "@/components/ForexCard";
 import { AIAssistant } from "@/components/AIAssistant";
 import { PositionCard } from "@/components/PositionCard";
 import { QuickTradeModal } from "@/components/QuickTradeModal";
-import { EmotionScoreBar } from "@/components/EmotionScoreBar";
 import { DailyCheckIn } from "@/components/DailyCheckIn";
 import { GhostTrades } from "@/components/GhostTrades";
 import { MarketPanicIndex } from "@/components/MarketPanicIndex";
@@ -73,43 +73,7 @@ export default function Dashboard() {
 
   return (
     <div className="min-h-screen bg-background" style={{ borderTop: `3px solid ${borderColor}` }}>
-      {/* Top Bar */}
-      <header className="border-b sticky top-0 bg-card z-10">
-        <div className="flex items-center justify-between px-4 py-3">
-          <div className="flex items-center gap-4">
-            <h1 className="text-xl font-bold">AI Trading Platform</h1>
-            <div className="hidden sm:flex items-center gap-2 text-sm">
-              <span className="text-muted-foreground">Balance:</span>
-              <span className="data-cell font-semibold">$50,000.00</span>
-            </div>
-          </div>
-          <div className="flex items-center gap-3">
-            <EmotionScoreBar />
-            <Link to="/history">
-              <Button variant="ghost" size="sm" className="hidden md:flex">
-                History
-              </Button>
-            </Link>
-            <Link to="/settings">
-              <Button variant="ghost" size="sm" className="hidden md:flex">
-                Settings
-              </Button>
-            </Link>
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => setDarkMode(!darkMode)}
-            >
-              {darkMode ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
-            </Button>
-            <Link to="/settings">
-              <Button variant="ghost" size="icon">
-                <User className="h-5 w-5" />
-              </Button>
-            </Link>
-          </div>
-        </div>
-      </header>
+      <Header darkMode={darkMode} onToggleDarkMode={() => setDarkMode(!darkMode)} />
 
       <div className="flex">
         {/* Main Content */}
@@ -145,15 +109,6 @@ export default function Dashboard() {
           <section>
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-xl font-semibold">Markets</h2>
-              <Button
-                variant="ghost"
-                size="sm"
-                className="lg:hidden"
-                onClick={() => setShowAI(!showAI)}
-              >
-                <Menu className="h-4 w-4 mr-2" />
-                AI Assistant
-              </Button>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
               {pairs.map((pair) => (
@@ -257,6 +212,15 @@ export default function Dashboard() {
         open={showQuickTrade}
         onOpenChange={setShowQuickTrade}
       />
+
+      {/* Floating Action Button */}
+      <Button
+        onClick={() => setShowAI(!showAI)}
+        className="fixed bottom-6 right-6 h-14 w-14 rounded-full bg-purple-600 hover:bg-purple-700 text-white shadow-lg hover:shadow-xl transition-all duration-200 z-10"
+        size="icon"
+      >
+        <MessageCircle className="h-6 w-6" />
+      </Button>
     </div>
   );
 }
