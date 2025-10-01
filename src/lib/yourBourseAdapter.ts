@@ -109,14 +109,22 @@ export function convertYBPositionsToPositions(ybPositions: YBPosition[]): Positi
  */
 export function filterPopularForexPairs(pairs: ForexPair[]): ForexPair[] {
   const popularSymbols = [
-    'EURUSD', 'GBPUSD', 'USDJPY', 'USDCHF',
+    'USDJPY', 'EURUSD', 'GBPUSD', 'USDCHF',
     'AUDUSD', 'USDCAD', 'NZDUSD', 'EURGBP',
     'EURJPY', 'GBPJPY', 'AUDJPY', 'EURAUD',
   ];
 
-  const popularPairs = pairs.filter(pair => 
-    popularSymbols.includes(pair.symbol)
-  );
+  // Create a map for quick lookup
+  const pairsMap = new Map(pairs.map(pair => [pair.symbol, pair]));
+  
+  // Get popular pairs in the correct order
+  const popularPairs: ForexPair[] = [];
+  for (const symbol of popularSymbols) {
+    const pair = pairsMap.get(symbol);
+    if (pair) {
+      popularPairs.push(pair);
+    }
+  }
 
   // If we have popular pairs, return them; otherwise return first 8 pairs
   return popularPairs.length > 0 ? popularPairs : pairs.slice(0, 8);
