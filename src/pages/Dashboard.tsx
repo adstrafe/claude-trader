@@ -306,6 +306,7 @@ export default function Dashboard() {
 
               <PositionsSection
                 positions={positions}
+                limit={4}
                 onClosePosition={async (positionId) => {
                   try {
                     const closedTrade = simulatedTrading.closeTrade(positionId);

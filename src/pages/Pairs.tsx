@@ -1,15 +1,22 @@
 import { useState, useEffect } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { ArrowLeft, TrendingUp, Star } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { ForexCard } from "@/components/ForexCard";
+import { QuickTradeModal } from "@/components/QuickTradeModal";
 import { MOCK_PAIRS, ForexPair } from "@/lib/mockData";
 import { cn } from "@/lib/utils";
 import { applyFavoritesToPairs, toggleFavorite, getFavoritePairsFromList, getFavoritesCount } from "@/lib/favorites";
+import { simulatedTrading } from "@/lib/simulatedTrading";
+import { emotionDetector } from "@/lib/emotionDetection";
+import { toast } from "sonner";
 
 export default function Pairs() {
+  const navigate = useNavigate();
   const [pairs, setPairs] = useState<ForexPair[]>([]);
+  const [selectedPair, setSelectedPair] = useState<ForexPair | null>(null);
+  const [showQuickTrade, setShowQuickTrade] = useState(false);
 
   useEffect(() => {
     // Apply favorites from cookies to the pairs
@@ -30,8 +37,8 @@ export default function Pairs() {
   };
 
   const handleQuickTrade = (pair: ForexPair) => {
-    // This would open the quick trade modal
-    console.log("Quick trade for:", pair.symbol);
+    setSelectedPair(pair);
+    setShowQuickTrade(true);
   };
 
   const favoritePairs = getFavoritePairsFromList(pairs);
@@ -111,6 +118,40 @@ export default function Pairs() {
           </section>
         )}
       </div>
+
+      <QuickTradeModal
+        pair={selectedPair}
+        open={showQuickTrade}
+        onOpenChange={setShowQuickTrade}
+        onTrade={async (direction, data) => {
+          try {
+            const trade = simulatedTrading.openTrade({
+              symbol: selectedPair!.symbol,
+              direction: direction,
+              lots: data.lots,
+              entryPrice: selectedPair!.price,
+              stopLoss: data.stopLoss,
+              takeProfit: data.takeProfit,
+            });
+            
+            toast.success(`${direction} order placed for ${selectedPair!.symbol} (DEMO)`, {
+              description: `${data.lots} lots @ ${selectedPair!.price.toFixed(5)}`
+            });
+            
+            emotionDetector.recordTrade();
+            
+            // Close the modal after successful trade
+            setShowQuickTrade(false);
+            
+            // Navigate back to dashboard to see the new position
+            setTimeout(() => {
+              navigate('/');
+            }, 1500);
+          } catch (error) {
+            toast.error(`Failed to place order: ${error}`);
+          }
+        }}
+      />
     </div>
   );
 }

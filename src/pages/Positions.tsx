@@ -1,21 +1,45 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { PositionCard } from "@/components/PositionCard";
-import { MOCK_OPEN_POSITIONS } from "@/lib/mockData";
+import { Position } from "@/lib/mockData";
+import { simulatedTrading } from "@/lib/simulatedTrading";
 import { toast } from "sonner";
 
 export default function Positions() {
-  const [positions, setPositions] = useState(MOCK_OPEN_POSITIONS);
+  const [positions, setPositions] = useState<Position[]>([]);
+
+  // Load positions from simulated trading on component mount
+  useEffect(() => {
+    const simulatedPositions = simulatedTrading.getOpenTrades().map(t => 
+      simulatedTrading.toPosition(t)
+    );
+    setPositions(simulatedPositions);
+  }, []);
 
   const totalPnL = positions.reduce((sum, pos) => sum + pos.pnl, 0);
   const totalExposure = positions.reduce((sum, pos) => sum + pos.lots * pos.entryPrice, 0);
 
-  const handleClosePosition = (positionId: string) => {
-    setPositions(positions.filter((p) => p.id !== positionId));
-    toast.success(`Position ${positionId} closed`);
+  const handleClosePosition = async (positionId: string) => {
+    try {
+      const closedTrade = simulatedTrading.closeTrade(positionId);
+      if (closedTrade) {
+        toast.success(`Position closed (DEMO)`, {
+          description: `P/L: ${closedTrade.pnl >= 0 ? '+' : ''}$${closedTrade.pnl.toFixed(2)}`
+        });
+        
+        // Update positions from simulated trading
+        const simulatedPositions = simulatedTrading.getOpenTrades().map(t => 
+          simulatedTrading.toPosition(t)
+        );
+        setPositions(simulatedPositions);
+      }
+    } catch (error) {
+      console.error("Error closing position:", error);
+      toast.error("Failed to close position");
+    }
   };
 
   return (
@@ -59,14 +83,16 @@ export default function Positions() {
             </Link>
           </Card>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {positions.map((position) => (
-              <PositionCard
-                key={position.id}
-                position={position}
-                onClose={() => handleClosePosition(position.id)}
-              />
-            ))}
+          <div className="@container">
+            <div className="grid grid-cols-1 @lg:grid-cols-2 @4xl:grid-cols-3 @5xl:grid-cols-4 gap-4">
+              {positions.map((position) => (
+                <PositionCard
+                  key={position.id}
+                  position={position}
+                  onClose={() => handleClosePosition(position.id)}
+                />
+              ))}
+            </div>
           </div>
         )}
       </div>

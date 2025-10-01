@@ -7,9 +7,10 @@ import { BarChart3 } from "lucide-react";
 interface PositionsSectionProps {
   positions: Position[];
   onClosePosition: (positionId: string) => void;
+  limit?: number;
 }
 
-export function PositionsSection({ positions, onClosePosition }: PositionsSectionProps) {
+export function PositionsSection({ positions, onClosePosition, limit }: PositionsSectionProps) {
   return (
     <section className="@container">
       <div className="flex items-center justify-between mb-4">
@@ -29,7 +30,7 @@ export function PositionsSection({ positions, onClosePosition }: PositionsSectio
         </div>
       ) : (
         <div className="grid grid-cols-1 @lg:grid-cols-2 @4xl:grid-cols-3 gap-4">
-          {positions.slice(0, 3).map((position) => (
+          {(limit ? positions.slice(0, limit) : positions).map((position) => (
             <PositionCard
               key={position.id}
               position={position}
