@@ -2,21 +2,20 @@ import { useState, useEffect } from "react";
 import { MessageCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Header } from "@/components/Header";
-import { ForexCard } from "@/components/ForexCard";
 import { AIAssistant } from "@/components/AIAssistant";
-import { PositionCard } from "@/components/PositionCard";
 import { QuickTradeModal } from "@/components/QuickTradeModal";
 import { DailyCheckIn } from "@/components/DailyCheckIn";
-import { MarketPanicIndex } from "@/components/MarketPanicIndex";
 import { TradeBattleMode } from "@/components/TradeBattleMode";
-import { RecommendedTrades, RecommendedTrade } from "@/components/RecommendedTrades";
+import { RecommendedTrades } from "@/components/RecommendedTrades";
+import { StatsBar } from "@/components/StatsBar";
+import { MarketsSection } from "@/components/MarketsSection";
+import { PositionsSection } from "@/components/PositionsSection";
 import { MOCK_PAIRS, MOCK_OPEN_POSITIONS, ForexPair } from "@/lib/mockData";
 import { priceSimulator } from "@/lib/priceSimulator";
 import { generateTradeSuggestions, TradeSuggestion } from "@/services/claudeAPI";
 import { useRiskProfile } from "@/lib/riskProfiles";
 import { emotionDetector } from "@/lib/emotionDetection";
 import { cn } from "@/lib/utils";
-import { Link } from "react-router-dom";
 import { toast } from "sonner";
 
 export default function Dashboard() {
@@ -96,44 +95,18 @@ export default function Dashboard() {
         <main className="flex-1 p-4 lg:p-6 space-y-6 max-w-full overflow-x-hidden">
           <DailyCheckIn />
 
-          {/* Stats Bar */}
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            <div className="rounded-lg border bg-card p-4">
-              <div className="text-sm text-muted-foreground">Total P&L</div>
-              <div className={cn("text-2xl font-bold data-cell", totalPnL >= 0 ? "text-success" : "text-danger")}>
-                {totalPnL >= 0 ? "+" : ""}${totalPnL.toFixed(2)}
-              </div>
-            </div>
-            <div className="rounded-lg border bg-card p-4">
-              <div className="text-sm text-muted-foreground">Open Positions</div>
-              <div className="text-2xl font-bold data-cell">{positions.length}</div>
-            </div>
-            <div className="rounded-lg border bg-card p-4">
-              <div className="text-sm text-muted-foreground">Risk Profile</div>
-              <div className="text-2xl font-bold">{currentRiskProfile.name}</div>
-            </div>
-          </div>
+          <StatsBar
+            totalPnL={totalPnL}
+            positionsCount={positions.length}
+            riskProfile={currentRiskProfile}
+          />
 
-          {/* Forex Pairs */}
-          <section>
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-xl font-semibold">Markets</h2>
-            </div>
-            <div className="mb-4">
-              <MarketPanicIndex />
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-              {pairs.map((pair) => (
-                <ForexCard
-                  key={pair.symbol}
-                  pair={pair}
-                  onQuickTrade={() => handleQuickTrade(pair)}
-                />
-              ))}
-            </div>
-          </section>
+          <MarketsSection
+            pairs={pairs}
+            onQuickTrade={handleQuickTrade}
+          />
 
-          <RecommendedTrades 
+          <RecommendedTrades
             pairs={pairs}
             riskProfile={currentRiskProfile}
             onTrade={(trade) => {
@@ -161,35 +134,13 @@ export default function Dashboard() {
             />
           </section>
 
-          {/* Open Positions */}
-          <section>
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-xl font-semibold">Open Positions</h2>
-              <Link to="/positions">
-                <Button variant="ghost" size="sm">
-                  View All
-                </Button>
-              </Link>
-            </div>
-            {positions.length === 0 ? (
-              <div className="rounded-lg border bg-card p-8 text-center text-muted-foreground">
-                No open positions
-              </div>
-            ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {positions.slice(0, 3).map((position) => (
-                  <PositionCard
-                    key={position.id}
-                    position={position}
-                    onClose={() => {
-                      setPositions(positions.filter((p) => p.id !== position.id));
-                      toast.success(`Position ${position.id} closed`);
-                    }}
-                  />
-                ))}
-              </div>
-            )}
-          </section>
+          <PositionsSection
+            positions={positions}
+            onClosePosition={(positionId) => {
+              setPositions(positions.filter((p) => p.id !== positionId));
+              toast.success(`Position ${positionId} closed`);
+            }}
+          />
         </main>
 
         {/* AI Sidebar - Desktop */}
