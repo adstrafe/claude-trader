@@ -6,6 +6,7 @@ import { AIChatInput } from "./AIChatInput";
 import { chatWithAI, ChatResponse } from "@/services/claudeAPI";
 import { ForexPair } from "@/lib/mockData";
 import { cn } from "@/lib/utils";
+import ReactMarkdown from "react-markdown";
 
 interface Message {
   role: "user" | "assistant";
@@ -92,7 +93,23 @@ export const AIAssistant = ({ pairs, openPositions, onClose, onTradeFromAI }: AI
                     : "bg-muted"
                 )}
               >
-                <p className="text-sm">{msg.content}</p>
+                {msg.role === "assistant" ? (
+                  <div className="text-sm prose prose-sm max-w-none dark:prose-invert">
+                    <ReactMarkdown
+                      components={{
+                        p: ({ children }) => <p className="mb-2 last:mb-0">{children}</p>,
+                        strong: ({ children }) => <strong className="font-semibold">{children}</strong>,
+                        ul: ({ children }) => <ul className="list-disc list-inside mb-2 space-y-1">{children}</ul>,
+                        ol: ({ children }) => <ol className="list-decimal list-inside mb-2 space-y-1">{children}</ol>,
+                        li: ({ children }) => <li className="text-sm">{children}</li>,
+                      }}
+                    >
+                      {msg.content}
+                    </ReactMarkdown>
+                  </div>
+                ) : (
+                  <p className="text-sm">{msg.content}</p>
+                )}
               </div>
               {msg.buttons && msg.buttons.length > 0 && (
                 <div className="space-y-2">
