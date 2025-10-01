@@ -228,6 +228,29 @@ export default function Dashboard() {
                 riskProfile={currentRiskProfile}
               />
 
+              <PositionsSection
+                positions={positions}
+                onClosePosition={async (positionId) => {
+                  try {
+                    const closedTrade = simulatedTrading.closeTrade(positionId);
+                    if (closedTrade) {
+                      toast.success(`Position closed (DEMO)`, {
+                        description: `P/L: ${closedTrade.pnl >= 0 ? '+' : ''}$${closedTrade.pnl.toFixed(2)}`
+                      });
+                      
+                      const simulatedPositions = simulatedTrading.getOpenTrades().map(t => 
+                        simulatedTrading.toPosition(t)
+                      );
+                      setPositions(simulatedPositions);
+                      setAccountBalance(simulatedTrading.getEquity());
+                    }
+                  } catch (error) {
+                    console.error("Error closing position:", error);
+                    toast.error("Failed to close position");
+                  }
+                }}
+              />
+
               <MarketsSection
                 pairs={pairs}
                 onQuickTrade={handleQuickTrade}
@@ -255,28 +278,6 @@ export default function Dashboard() {
                   onLoadSuggestions={loadAISuggestions}
                 />
               </section>
-
-              <PositionsSection
-                positions={positions}
-                onClosePosition={async (positionId) => {
-                  try {
-                    const closedTrade = simulatedTrading.closeTrade(positionId);
-                    if (closedTrade) {
-                      toast.success(`Position closed (DEMO)`, {
-                        description: `P/L: ${closedTrade.pnl >= 0 ? '+' : ''}$${closedTrade.pnl.toFixed(2)}`
-                      });
-                      
-                      const simulatedPositions = simulatedTrading.getOpenTrades().map(t => 
-                        simulatedTrading.toPosition(t)
-                      );
-                      setPositions(simulatedPositions);
-                      setAccountBalance(simulatedTrading.getEquity());
-                    }
-                  } catch (error) {
-                    toast.error(`Failed to close position: ${error}`);
-                  }
-                }}
-              />
             </>
           )}
         </main>
