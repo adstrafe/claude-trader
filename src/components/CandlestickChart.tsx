@@ -1,5 +1,5 @@
 import { useEffect, useRef } from "react";
-import { createChart, CandlestickData } from "lightweight-charts";
+import { createChart, CandlestickData, CandlestickSeries } from "lightweight-charts";
 
 interface CandlestickChartProps {
   data: CandlestickData[];
@@ -33,9 +33,8 @@ export const CandlestickChart = ({ data, height = 400 }: CandlestickChartProps) 
       },
     });
 
-    // v5.0 API: use addSeries() instead of addCandlestickSeries()
-    seriesRef.current = chartRef.current.addSeries({
-      type: "Candlestick",
+    // v5.0 API: Pass CandlestickSeries as first argument
+    seriesRef.current = chartRef.current.addSeries(CandlestickSeries, {
       upColor: "#10b981",
       downColor: "#ef4444",
       borderUpColor: "#10b981",
