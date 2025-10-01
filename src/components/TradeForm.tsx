@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
@@ -35,6 +35,15 @@ export const TradeForm = ({ symbol, currentPrice, direction, onSubmit }: TradeFo
   const lots = watch("lots");
   const stopLoss = watch("stopLoss");
   const takeProfit = watch("takeProfit");
+
+  // Update TP/SL values when current price changes (for real-time updates)
+  useEffect(() => {
+    if (autoTPSL) {
+      const auto = calculateAutoTPSL(currentPrice, direction, symbol);
+      setValue("stopLoss", auto.stopLoss);
+      setValue("takeProfit", auto.takeProfit);
+    }
+  }, [currentPrice, direction, symbol, autoTPSL, setValue]);
 
   // Simple risk calculation for demo
   const riskScore = Math.min(100, (lots / profile.maxLots) * 100);
@@ -124,7 +133,7 @@ export const TradeForm = ({ symbol, currentPrice, direction, onSubmit }: TradeFo
             <Input
               id="stopLoss"
               type="number"
-              step="0.001"
+              step={symbol === "BTCUSD" ? "1" : symbol.includes("JPY") ? "0.1" : "0.0001"}
               {...register("stopLoss", { valueAsNumber: true })}
               onChange={() => setAutoTPSL(false)}
             />
@@ -136,7 +145,7 @@ export const TradeForm = ({ symbol, currentPrice, direction, onSubmit }: TradeFo
             <Input
               id="takeProfit"
               type="number"
-              step="0.001"
+              step={symbol === "BTCUSD" ? "1" : symbol.includes("JPY") ? "0.1" : "0.0001"}
               {...register("takeProfit", { valueAsNumber: true })}
               onChange={() => setAutoTPSL(false)}
             />

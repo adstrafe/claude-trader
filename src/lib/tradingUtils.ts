@@ -21,20 +21,40 @@ export const calculateAutoTPSL = (
   direction: "BUY" | "SELL",
   symbol: string
 ): { stopLoss: number; takeProfit: number } => {
-  const slDistance = symbol === "BTCUSD" ? 500 : symbol.includes("JPY") ? 0.5 : 0.005;
-  const tpDistance = slDistance * 2; // 1:2 RR
+  // Calculate appropriate distance based on symbol type and current price
+  let slDistance: number;
+  
+  if (symbol === "BTCUSD") {
+    slDistance = 500; // $500 for BTC
+  } else if (symbol.includes("JPY")) {
+    slDistance = 0.5; // 50 pips for JPY pairs
+  } else {
+    // For major pairs like EUR/USD, GBP/USD, EUR/GBP, etc.
+    // Use percentage-based distance for more realistic values
+    slDistance = entry * 0.005; // 0.5% of current price
+  }
+  
+  const tpDistance = slDistance * 2; // 1:2 Risk/Reward ratio
+  
+  // Get the appropriate number of decimal places for this symbol
+  const decimals = symbol === "BTCUSD" ? 2 : symbol.includes("JPY") ? 3 : 5;
+  
+  let stopLoss: number;
+  let takeProfit: number;
   
   if (direction === "BUY") {
-    return {
-      stopLoss: entry - slDistance,
-      takeProfit: entry + tpDistance,
-    };
+    stopLoss = entry - slDistance;
+    takeProfit = entry + tpDistance;
   } else {
-    return {
-      stopLoss: entry + slDistance,
-      takeProfit: entry - tpDistance,
-    };
+    stopLoss = entry + slDistance;
+    takeProfit = entry - tpDistance;
   }
+  
+  // Round to the appropriate number of decimal places
+  return {
+    stopLoss: Math.round(stopLoss * Math.pow(10, decimals)) / Math.pow(10, decimals),
+    takeProfit: Math.round(takeProfit * Math.pow(10, decimals)) / Math.pow(10, decimals),
+  };
 };
 
 export const formatRelativeTime = (date: Date): string => {
