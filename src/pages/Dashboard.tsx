@@ -210,6 +210,32 @@ export default function Dashboard() {
     setShowQuickTrade(true);
   };
 
+  const handleTradeFromAI = (trade: {
+    pair: string;
+    direction: "BUY" | "SELL";
+    entry: number;
+    takeProfit: number;
+    stopLoss: number;
+    lots: number;
+  }) => {
+    try {
+      const newTrade = simulatedTrading.openTrade({
+        symbol: trade.pair,
+        direction: trade.direction,
+        lots: trade.lots,
+        entryPrice: trade.entry,
+        stopLoss: trade.stopLoss,
+        takeProfit: trade.takeProfit,
+      });
+      
+      setPositions(prev => [...prev, newTrade]);
+      setAccountBalance(simulatedTrading.getEquity());
+      toast.success(`Trade opened: ${trade.direction} ${trade.pair} @ ${trade.entry}`);
+    } catch (error) {
+      toast.error(`Failed to open trade: ${error}`);
+    }
+  };
+
   const handleToggleFavorite = (symbol: string) => {
     // Toggle favorite in cookies
     toggleFavorite(symbol);
@@ -329,6 +355,7 @@ export default function Dashboard() {
             pairs={pairs}
             openPositions={positions.length}
             onClose={() => setShowAI(false)}
+            onTradeFromAI={handleTradeFromAI}
           />
         </aside>
 
@@ -346,6 +373,7 @@ export default function Dashboard() {
                 pairs={pairs}
                 openPositions={positions.length}
                 onClose={() => setShowAI(false)}
+                onTradeFromAI={handleTradeFromAI}
               />
             </div>
           </div>
