@@ -1,5 +1,5 @@
 import { useEffect, useRef } from "react";
-import { createChart, IChartApi, ISeriesApi, CandlestickData } from "lightweight-charts";
+import { createChart, CandlestickData } from "lightweight-charts";
 
 interface CandlestickChartProps {
   data: CandlestickData[];
@@ -8,8 +8,8 @@ interface CandlestickChartProps {
 
 export const CandlestickChart = ({ data, height = 400 }: CandlestickChartProps) => {
   const chartContainerRef = useRef<HTMLDivElement>(null);
-  const chartRef = useRef<IChartApi | null>(null);
-  const seriesRef = useRef<ISeriesApi<"Candlestick"> | null>(null);
+  const chartRef = useRef<any>(null);
+  const seriesRef = useRef<any>(null);
 
   useEffect(() => {
     if (!chartContainerRef.current) return;
@@ -33,17 +33,18 @@ export const CandlestickChart = ({ data, height = 400 }: CandlestickChartProps) 
       },
     });
 
-    seriesRef.current = chartRef.current.addSeries({
-      type: "Candlestick",
+    seriesRef.current = (chartRef.current as any).addCandlestickSeries({
       upColor: "#10b981",
       downColor: "#ef4444",
       borderUpColor: "#10b981",
       borderDownColor: "#ef4444",
       wickUpColor: "#10b981",
       wickDownColor: "#ef4444",
-    } as any);
+    });
 
-    seriesRef.current.setData(data);
+    if (data.length > 0) {
+      seriesRef.current.setData(data);
+    }
 
     const handleResize = () => {
       if (chartRef.current && chartContainerRef.current) {
@@ -57,12 +58,14 @@ export const CandlestickChart = ({ data, height = 400 }: CandlestickChartProps) 
 
     return () => {
       window.removeEventListener("resize", handleResize);
-      chartRef.current?.remove();
+      if (chartRef.current) {
+        chartRef.current.remove();
+      }
     };
   }, [height]);
 
   useEffect(() => {
-    if (seriesRef.current) {
+    if (seriesRef.current && data.length > 0) {
       seriesRef.current.setData(data);
     }
   }, [data]);

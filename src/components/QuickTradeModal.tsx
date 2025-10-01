@@ -1,4 +1,4 @@
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "./ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "./ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "./ui/tabs";
 import { TradeForm } from "./TradeForm";
 import { ForexPair } from "@/lib/mockData";
@@ -25,6 +25,9 @@ export const QuickTradeModal = ({ pair, open, onOpenChange }: QuickTradeModalPro
       <DialogContent className="max-w-md">
         <DialogHeader>
           <DialogTitle>{pair.name} - Quick Trade</DialogTitle>
+          <DialogDescription>
+            Place a buy or sell order for {pair.name}
+          </DialogDescription>
         </DialogHeader>
         <Tabs defaultValue="buy">
           <TabsList className="grid w-full grid-cols-2">

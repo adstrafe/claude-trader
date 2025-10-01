@@ -43,8 +43,11 @@ pnpm install
 cp .env.example .env
 
 # Add your Anthropic API key to .env
-VITE_ANTHROPIC_API_KEY=your_api_key_here
+# Get your key from: https://console.anthropic.com/settings/keys
+VITE_ANTHROPIC_API_KEY=sk-ant-your-actual-key-here
 ```
+
+**Important:** Without the API key, AI features (suggestions and chat) won't work, but all other features will function normally.
 
 ### Development
 
