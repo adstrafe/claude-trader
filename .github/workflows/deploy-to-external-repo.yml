@@ -1,0 +1,48 @@
+name: Build and Deploy to External Repo
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout source code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: 8
+
+      - name: Install dependencies
+        run: pnpm install
+
+      - name: Build project
+        run: pnpm run build
+        env:
+          VITE_YB_ACCOUNT_ID: ${{ secrets.VITE_YB_ACCOUNT_ID }}
+          VITE_YB_PASSWORD: ${{ secrets.VITE_YB_PASSWORD }}
+          VITE_ANTHROPIC_API_KEY: ${{ secrets.VITE_ANTHROPIC_API_KEY }}
+
+      - name: Deploy to GitHub Pages repository
+        uses: cpina/github-action-push-to-another-repository@main
+        env:
+          API_TOKEN_GITHUB: ${{ secrets.DEPLOY_TOKEN }}
+        with:
+          source-directory: 'dist'
+          destination-github-username: 'adstrafe'
+          destination-repository-name: 'adstrafe.github.io'
+          user-email: github-actions@github.com
+          target-branch: master
+          commit-message: 'Deploy claude-trader build from ${{ github.sha }}'
+
