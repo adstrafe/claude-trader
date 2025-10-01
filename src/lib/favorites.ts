@@ -3,7 +3,7 @@ import { ForexPair } from "./mockData";
 const FAVORITES_COOKIE_KEY = 'favorite_pairs';
 
 // Default favorite pairs
-const DEFAULT_FAVORITES = ['EURUSD', 'USDJPY', 'GBPUSD', 'EURGBP'];
+const DEFAULT_FAVORITES = ['USDJPY', 'EURUSD', 'GBPUSD', 'EURGBP'];
 
 // Cookie utility functions
 function setCookie(name: string, value: string, days: number = 365) {
@@ -89,15 +89,22 @@ export function getDashboardPairs(pairs: ForexPair[]): ForexPair[] {
     return favoritePairs.slice(0, 4);
   }
   
-  // If we have less than 4 favorites, fill with defaults
+  // If we have less than 4 favorites, fill with defaults in order
   const remainingDefaults = DEFAULT_FAVORITES.filter(defaultPair => 
     !favorites.includes(defaultPair)
   );
   
   const needed = 4 - favoritePairs.length;
-  const defaultPairs = pairs.filter(pair => 
-    remainingDefaults.includes(pair.symbol)
-  ).slice(0, needed);
+  const defaultPairs: ForexPair[] = [];
+  
+  // Add default pairs in the correct order
+  for (const defaultSymbol of remainingDefaults) {
+    if (defaultPairs.length >= needed) break;
+    const pair = pairs.find(p => p.symbol === defaultSymbol);
+    if (pair) {
+      defaultPairs.push(pair);
+    }
+  }
   
   return [...favoritePairs, ...defaultPairs];
 }
