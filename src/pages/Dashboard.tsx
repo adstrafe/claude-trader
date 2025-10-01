@@ -169,21 +169,21 @@ export default function Dashboard() {
         </main>
 
         {/* AI Sidebar - Desktop */}
-        <aside className={cn(
-          "hidden lg:block w-96 border-l bg-card transition-all",
-          showAI && "block"
-        )}>
-          <div className="sticky top-[57px] h-[calc(100vh-57px)]">
-            <AIAssistant
-              pairs={pairs}
-              openPositions={positions.length}
-              onTradeFromAI={(trade) => {
-                const pair = pairs.find((p) => p.symbol === trade.pair);
-                if (pair) handleQuickTrade(pair);
-              }}
-            />
-          </div>
-        </aside>
+        {showAI && (
+          <aside className="hidden lg:block w-96 border-l bg-card transition-all">
+            <div className="sticky top-[57px] h-[calc(100vh-57px)]">
+              <AIAssistant
+                pairs={pairs}
+                openPositions={positions.length}
+                onClose={() => setShowAI(false)}
+                onTradeFromAI={(trade) => {
+                  const pair = pairs.find((p) => p.symbol === trade.pair);
+                  if (pair) handleQuickTrade(pair);
+                }}
+              />
+            </div>
+          </aside>
+        )}
 
         {/* AI Mobile Modal */}
         {showAI && (
@@ -210,14 +210,16 @@ export default function Dashboard() {
         onOpenChange={setShowQuickTrade}
       />
 
-      {/* Floating Action Button */}
-      <Button
-        onClick={() => setShowAI(!showAI)}
-        className="fixed bottom-6 right-6 h-14 w-14 rounded-full bg-purple-600 hover:bg-purple-700 text-white shadow-lg hover:shadow-xl transition-all duration-200 z-10"
-        size="icon"
-      >
-        <MessageCircle className="h-6 w-6" />
-      </Button>
+      {/* Floating Action Button - Only show when AI is closed */}
+      {!showAI && (
+        <Button
+          onClick={() => setShowAI(true)}
+          className="fixed bottom-6 right-6 h-14 w-14 rounded-full bg-purple-600 hover:bg-purple-700 text-white shadow-lg hover:shadow-xl transition-all duration-200 z-10"
+          size="icon"
+        >
+          <MessageCircle className="h-6 w-6" />
+        </Button>
+      )}
     </div>
   );
 }
