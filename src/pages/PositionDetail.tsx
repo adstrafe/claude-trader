@@ -62,7 +62,14 @@ export default function PositionDetail() {
   }
 
   const isBuy = position.direction === "BUY";
-  const isProfit = position.pnl >= 0;
+  const isProfit = position.pnl > 0;
+  const isLoss = position.pnl < 0;
+  const isNeutral = position.pnl === 0;
+  
+  // Separate logic for percentage values
+  const isPercentProfit = position.pnlPercent > 0.01;
+  const isPercentLoss = position.pnlPercent < -0.01;
+  const isPercentNeutral = Math.abs(position.pnlPercent) <= 0.01;
 
   const handleClose = () => {
     toast.success(`Position ${position.id} closed at ${formatPrice(position.currentPrice, position.symbol)}`);
@@ -148,12 +155,22 @@ export default function PositionDetail() {
           <div className="space-y-4">
             <Card className="p-4">
               <h3 className="font-semibold mb-4">P&L</h3>
-              <div className={cn("text-3xl font-bold data-cell mb-2", isProfit ? "text-success" : "text-danger")}>
-                {isProfit ? "+" : ""}${position.pnl.toFixed(2)}
+              <div className={cn("text-3xl font-bold data-cell mb-2", 
+                isProfit ? "text-success" : 
+                isLoss ? "text-danger" : 
+                "text-muted-foreground"
+              )}>
+                {isProfit ? "+" : isLoss ? "-" : ""}${Math.abs(position.pnl).toFixed(2)}
               </div>
-              <div className={cn("text-lg", isProfit ? "text-success" : "text-danger")}>
-                {isProfit ? "+" : ""}
-                {position.pnlPercent.toFixed(2)}%
+              <div className={cn("text-lg", 
+                isPercentProfit ? "text-success" : 
+                isPercentLoss ? "text-danger" : 
+                "text-muted-foreground"
+              )}>
+                {Math.abs(position.pnlPercent) < 0.01 ? 
+                  "0.00" : 
+                  position.pnlPercent.toFixed(2)
+                }%
               </div>
             </Card>
 

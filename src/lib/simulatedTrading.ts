@@ -108,13 +108,17 @@ class SimulatedTradingSystem {
     stopLoss: number;
     takeProfit: number;
   }): SimulatedTrade {
+    // Add small random price movement to simulate realistic market conditions
+    const priceVariation = (Math.random() - 0.5) * 0.0001; // ±0.00005 variation
+    const currentPrice = params.entryPrice + priceVariation;
+    
     const trade: SimulatedTrade = {
       id: `SIM-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
       symbol: params.symbol,
       direction: params.direction,
       lots: params.lots,
       entryPrice: params.entryPrice,
-      currentPrice: params.entryPrice,
+      currentPrice: currentPrice,
       stopLoss: params.stopLoss,
       takeProfit: params.takeProfit,
       openTime: new Date(),
@@ -122,6 +126,15 @@ class SimulatedTradingSystem {
       pnlPercent: 0,
       status: 'OPEN',
     };
+
+    // Calculate initial P/L
+    const priceDiff = params.direction === 'BUY' 
+      ? currentPrice - params.entryPrice 
+      : params.entryPrice - currentPrice;
+    
+    const pipValue = this.getPipValue(params.symbol);
+    trade.pnl = priceDiff * params.lots * pipValue;
+    trade.pnlPercent = (priceDiff / params.entryPrice) * 100;
 
     this.trades.push(trade);
     this.saveToStorage();
@@ -244,9 +257,9 @@ class SimulatedTradingSystem {
     // For standard forex pairs (100,000 units per lot)
     // JPY pairs have different pip value
     if (symbol.includes('JPY')) {
-      return 1000; // 0.01 pip for JPY pairs
+      return 100000; // $10 per pip for JPY pairs
     }
-    return 10; // 0.0001 pip for other pairs
+    return 100000; // $10 per pip for other pairs
   }
 
   /**
