@@ -19,7 +19,7 @@ export function StatsBar({ totalPnL, positionsCount, riskProfile }: StatsBarProp
         <div className={cn("text-2xl font-bold data-cell", 
           isProfit ? "text-success" : 
           isLoss ? "text-danger" : 
-          "text-muted-foreground"
+          ""
         )}>
           {isProfit ? "+" : isLoss ? "-" : ""}${Math.abs(totalPnL).toFixed(2)}
         </div>
