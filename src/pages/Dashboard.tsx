@@ -97,6 +97,16 @@ export default function Dashboard() {
           let openingPrice: number | null = null;
           
           yourBourseAPI.subscribeToPrices(pair.symbol, (data) => {
+            console.log(`${pair.symbol} Dashboard Real-time Data:`, {
+              symbol: pair.symbol,
+              ask: data.a,
+              bid: data.bid,
+              change: data.c,
+              changePercent: data.cp,
+              high24h: data.h,
+              low24h: data.low
+            });
+            
             setPairs(prev => prev.map(p => {
               const symbolMatch = data.s === p.symbol || data.n === p.symbol;
               if (symbolMatch && data.a && data.bid) {
