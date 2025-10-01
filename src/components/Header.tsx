@@ -7,9 +7,10 @@ import { Link } from "react-router-dom";
 interface HeaderProps {
   darkMode: boolean;
   onToggleDarkMode: () => void;
+  balance?: number;
 }
 
-export function Header({ darkMode, onToggleDarkMode }: HeaderProps) {
+export function Header({ darkMode, onToggleDarkMode, balance = 50000 }: HeaderProps) {
   const [showMobileMenu, setShowMobileMenu] = useState(false);
 
   return (
@@ -19,7 +20,7 @@ export function Header({ darkMode, onToggleDarkMode }: HeaderProps) {
           <h1 className="text-md font-bold">OnlyPrompts<br />Trading</h1>
           <div className="hidden sm:flex items-center gap-2 text-sm">
             <span className="text-muted-foreground">Balance:</span>
-            <span className="data-cell font-semibold">$50,000.00</span>
+            <span className="data-cell font-semibold">${balance.toFixed(2)}</span>
           </div>
         </div>
         
@@ -69,7 +70,7 @@ export function Header({ darkMode, onToggleDarkMode }: HeaderProps) {
             {/* Balance */}
             <div className="flex items-center gap-2 text-sm">
               <span className="text-muted-foreground">Balance:</span>
-              <span className="data-cell font-semibold">$50,000.00</span>
+              <span className="data-cell font-semibold">${balance.toFixed(2)}</span>
             </div>
 
             {/* Emotional State Badge */}

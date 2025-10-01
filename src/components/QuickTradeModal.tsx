@@ -2,21 +2,21 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } f
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "./ui/tabs";
 import { TradeForm } from "./TradeForm";
 import { ForexPair } from "@/lib/mockData";
-import { toast } from "sonner";
 
 interface QuickTradeModalProps {
   pair: ForexPair | null;
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  onTrade?: (direction: "BUY" | "SELL", data: any) => void | Promise<void>;
 }
 
-export const QuickTradeModal = ({ pair, open, onOpenChange }: QuickTradeModalProps) => {
+export const QuickTradeModal = ({ pair, open, onOpenChange, onTrade }: QuickTradeModalProps) => {
   if (!pair) return null;
 
-  const handleTrade = (direction: "BUY" | "SELL") => (data: any) => {
-    toast.success(`${direction} order placed for ${pair.symbol}`, {
-      description: `${data.lots} lots @ ${pair.price.toFixed(pair.symbol === "BTCUSD" ? 2 : 5)}`,
-    });
+  const handleTrade = (direction: "BUY" | "SELL") => async (data: any) => {
+    if (onTrade) {
+      await onTrade(direction, data);
+    }
     onOpenChange(false);
   };
 
