@@ -256,25 +256,15 @@ export function RecommendedTrades({ pairs, riskProfile, onTrade }: RecommendedTr
         </TooltipProvider>
       </div>
       
-      {/* Mobile Carousel */}
+      {/* Mobile Horizontal Scroll */}
       <div className="md:hidden">
-        <Carousel
-          opts={{
-            align: "start",
-            loop: true,
-          }}
-          className="w-full"
-        >
-          <CarouselContent className="-ml-2 md:-ml-4">
-            {recommendations.map((trade) => (
-              <CarouselItem key={trade.id} className="pl-2 md:pl-4">
-                <TradeCard trade={trade} onTrade={onTrade} />
-              </CarouselItem>
-            ))}
-          </CarouselContent>
-          <CarouselPrevious className="left-2" />
-          <CarouselNext className="right-2" />
-        </Carousel>
+        <div className="flex gap-4 overflow-x-auto pb-4 scrollbar-hide">
+          {recommendations.map((trade) => (
+            <div key={trade.id} className="flex-shrink-0 w-80">
+              <TradeCard trade={trade} onTrade={onTrade} />
+            </div>
+          ))}
+        </div>
       </div>
 
       {/* Desktop Grid */}

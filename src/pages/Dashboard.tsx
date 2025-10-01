@@ -88,12 +88,12 @@ export default function Dashboard() {
   }, [emotionScore]);
 
   return (
-    <div className="min-h-screen bg-background" style={{ borderTop: `3px solid ${borderColor}` }}>
+    <div className="min-h-screen bg-background max-w-full overflow-x-hidden" style={{ borderTop: `3px solid ${borderColor}` }}>
       <Header darkMode={darkMode} onToggleDarkMode={() => setDarkMode(!darkMode)} />
 
-      <div className="flex">
+      <div className="flex max-w-full overflow-x-hidden">
         {/* Main Content */}
-        <main className="flex-1 p-4 lg:p-6 space-y-6">
+        <main className="flex-1 p-4 lg:p-6 space-y-6 max-w-full overflow-x-hidden">
           <DailyCheckIn />
           
           <MarketPanicIndex />
@@ -147,7 +147,6 @@ export default function Dashboard() {
             }}
           />
 
-          <GhostTrades />
 
           {/* AI Suggestions - Battle Mode */}
           <section>
