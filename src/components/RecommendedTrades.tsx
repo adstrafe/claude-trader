@@ -196,7 +196,7 @@ export function RecommendedTrades({ pairs, riskProfile, onTrade }: RecommendedTr
   // Show loading state
   if (loading && recommendations.length === 0) {
     return (
-      <section className="mt-6">
+      <section className="mt-6 @container">
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-2">
             <Zap className="h-5 w-5 text-primary" />
@@ -221,7 +221,7 @@ export function RecommendedTrades({ pairs, riskProfile, onTrade }: RecommendedTr
     return null;
   }
   return (
-    <section className="mt-6">
+    <section className="mt-6 @container">
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2">
           <Zap className="h-5 w-5 text-primary" />
@@ -246,7 +246,7 @@ export function RecommendedTrades({ pairs, riskProfile, onTrade }: RecommendedTr
                 className="flex items-center gap-2 hover:bg-primary/10"
               >
                 <RefreshCw className={cn("h-4 w-4", loading && "animate-spin")} />
-                {loading ? "Generating..." : "Refresh Recommendations"}
+                <span className="hidden @2xl:block">{loading ? "Generating..." : "Refresh"}</span>
               </Button>
             </TooltipTrigger>
             <TooltipContent>
@@ -257,7 +257,7 @@ export function RecommendedTrades({ pairs, riskProfile, onTrade }: RecommendedTr
       </div>
       
       {/* Mobile Horizontal Scroll */}
-      <div className="md:hidden">
+      <div className="@md:hidden">
         <div className="flex gap-4 overflow-x-auto pb-4 scrollbar-hide">
           {recommendations.map((trade) => (
             <div key={trade.id} className="flex-shrink-0 w-80">
@@ -268,7 +268,7 @@ export function RecommendedTrades({ pairs, riskProfile, onTrade }: RecommendedTr
       </div>
 
       {/* Desktop Grid */}
-      <div className="hidden md:grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4">
+      <div className="@md:grid grid-cols-1 @2xl:grid-cols-2 @3xl:grid-cols-3 @5xl:grid-cols-4 gap-4 hidden">
         {recommendations.map((trade) => (
           <TradeCard key={trade.id} trade={trade} onTrade={onTrade} />
         ))}
